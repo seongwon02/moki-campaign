@@ -28,10 +28,10 @@
      ```
 
    **브랜치 이름 규칙**
-   `<type>/<scope>/#<issue-number>-<description>`
-    - **type**: `feat`, `fix`, `docs` 등 [커밋 타입](#-allowed-type)과 동일
-    - **scope**: `fe`, `be`, `ai` 등 작업 영역
-    - **issue-number**: 관련된 이슈 번호
+   `<type>/<scope>/#<issue-number>-<description>`<br>
+    - **type**: `feat`, `fix`, `docs` 등 [커밋 타입](#-allowed-type)과 동일<br>
+    - **scope**: `fe`, `be`, `ai` 등 작업 영역<br>
+    - **issue-number**: 관련된 이슈 번호<br>
     - **description**: 브랜치에 대한 간단한 설명 (영문 소문자, 띄어쓰기는 `-`로 연결)
 
    **예시)**

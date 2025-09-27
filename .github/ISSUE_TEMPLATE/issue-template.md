@@ -1,4 +1,3 @@
-
 ---
 name: issue template
 about: This is issue template!

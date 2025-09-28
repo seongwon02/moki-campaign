@@ -24,7 +24,7 @@
    - 생성한 이슈를 기반으로 `main` 브랜치에서 새로운 기능 브랜치(feature branch)를 생성합니다.
    - 브랜치 이름은 아래 규칙을 따릅니다.
      ```bash
-     git checkout -b <브랜치_이름> main
+     git checkout -b <브랜치_이름>
      ```
 
    **브랜치 이름 규칙**

@@ -1,0 +1,43 @@
+name: mokidata
+channels:
+  - defaults
+  - conda-forge
+  - pytorch   # PyTorch의 공식 패키지를 사용하기 위해 채널 추가
+
+dependencies:
+  # 1. Python 버전
+  - python=3.12.11  # 현재 추출된 버전을 유지합니다.
+
+  # 2. 과학 계산 및 데이터 처리 (CPU/GPU 공통 필수)
+  - numpy
+  - pandas
+  - scikit-learn
+  - scipy
+  - matplotlib
+  - seaborn
+  
+  # 3. 딥러닝 프레임워크 옵션 (GPU 사용 시 활성화)
+  # ----------------------------------------------------------------------
+  # [옵션 A] PyTorch (GPU 사용 환경을 위한 설정)
+  # - GPU 사용을 결정하면 아래 두 라인의 주석을 해제합니다.
+  # - 'pytorch-cuda=12.1'은 예시이며, 실제 GPU 환경의 CUDA 버전에 맞춰야 합니다.
+  # - pytorch::pytorch 
+  # - pytorch::pytorch-cuda=12.1 # 예시: CUDA 12.1 버전용 패키지
+  
+  # [옵션 B] TensorFlow (GPU 사용 환경을 위한 설정)
+  # - TensorFlow를 사용한다면 아래 두 라인의 주석을 해제합니다.
+  # - tensorflow-gpu
+  # ----------------------------------------------------------------------
+
+  # 4. Pip 설치 패키지 (웹/API 관련)
+  - pip
+  - pip:
+    - fastapi==0.118.0
+    - uvicorn[standard]==0.37.0
+    - pydantic==2.11.9
+    - python-dotenv
+    - python-multipart
+    # 필요한 다른 pip 패키지들 (추출된 파일에서 핵심만 선택)
+    # - httpcore
+    # - httpx
+    # - starlette

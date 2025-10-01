@@ -1,1 +1,52 @@
+# 1. 운영체제 및 에디터 관련 파일
+# macOS, Linux
+.DS_Store
+# Windows 썸네일 캐시
+Thumbs.db
+# VS Code
+.vscode/
 
+# 2. Python 캐시 및 빌드 파일
+# 바이트 코드 파일
+*.pyc
+# 패키지 컴파일 및 캐시
+__pycache__/
+*.so
+
+# 3. 환경 및 의존성 관리
+# Conda 가상 환경 폴더 (일반적인 저장 위치)
+# Conda는 보통 설치 경로의 'envs'에 환경을 만듭니다.
+# 만약 프로젝트 폴더 내에 직접 가상 환경을 만들 경우 추가:
+# venv/ 
+# .venv/ 
+envs/
+
+# 4. 설정 및 민감 정보 (config/ 폴더)
+# 실제 환경 변수 및 설정 파일 (보안상 필수 제외)
+# .env 파일은 민감한 정보를 담고 있으므로 반드시 제외합니다.
+config/.env
+# 기타 로컬 설정 파일
+*.ini
+*.cfg
+*.local
+
+# 5. 아티팩트 및 결과물 (데이터 및 모델)
+# 대용량 데이터 파일 (data/ 폴더)
+data/
+# 학습된 모델 아티팩트 (models/ 폴더)
+models/
+# TensorBoard 로그
+runs/
+tb_logs/
+*.pt  # PyTorch 모델 파일
+*.h5  # Keras/TensorFlow 모델 파일
+*.pkl # Pickle/Scikit-learn 모델 파일
+*.onnx # ONNX 모델 파일
+
+# 6. 로그 파일
+# 실행 중 생성되는 로그 파일
+*.log
+
+# 7. 서버 관련 캐시
+# Uvicorn, Gunicorn 등 서버 관련 캐시 및 로그가 생성될 수 있습니다.
+.uvicorn/

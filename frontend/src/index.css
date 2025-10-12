@@ -1,3 +1,29 @@
+/* Tailwind CSS directives */
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+/* ---------------------------------------------------- */
+/* 커스텀 CSS 변수 및 전역 스타일 추가 */
+/* ---------------------------------------------------- */
+
+:root {
+  /* 앱의 주 색상 (Tailwind indigo-600과 유사) */
+  --color-primary: #4f46e5;
+  /* 배경색을 Tailwind의 gray-100 대신 미세 조정 */
+  --color-bg-light: #f7f9fc;
+}
+
+body {
+  /* 전역 폰트 설정 (예: Inter 폰트 사용 가정) */
+  font-family: "Inter", sans-serif;
+  /* 기본 배경색 설정 */
+  background-color: var(--color-bg-light);
+}
+
+/* 로그인 카드에 적용할 커스텀 클래스 */
+.login-card-shadow {
+  /* Tailwind shadow-2xl 보다 더 강한 3D 느낌의 그림자를 정의 */
+  box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1),
+    0 10px 10px -5px rgba(0, 0, 0, 0.04);
+}

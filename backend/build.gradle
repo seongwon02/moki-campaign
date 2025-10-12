@@ -25,8 +25,13 @@ repositories {
 }
 
 dependencies {
+	// JPA
 	implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
+
+	// Web
 	implementation 'org.springframework.boot:spring-boot-starter-web'
+
+	// validate
 	implementation 'org.springframework.boot:spring-boot-starter-validation'
 	
 	// Swagger/OpenAPI
@@ -43,6 +48,13 @@ dependencies {
 	// test
 	testImplementation 'org.springframework.boot:spring-boot-starter-test'
 	testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
+
+	// CI/CD (Health Check)
+	implementation 'org.springframework.boot:spring-boot-starter-actuator'
+
+	// Database
+	runtimeOnly 'com.h2database:h2' // 개발 환경
+	runtimeOnly 'com.mysql:mysql-connector-j' // 운영 환경
 }
 
 tasks.named('test') {

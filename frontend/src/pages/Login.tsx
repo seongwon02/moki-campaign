@@ -5,15 +5,14 @@ import { loginUser, resetStatus } from "../store/authSlice.ts";
 import { type AppDispatch, type RootState } from "../store/index.ts";
 import Input from "../components/common/Input.tsx";
 import Button from "../components/common/Button.tsx";
-// 더 이상 아이콘을 사용하지 않으므로 BarChart3 임포트 제거
 
 /**
  * 로그인 페이지 컴포넌트
  * 인증 상태(Redux)를 통해 로그인 처리 및 페이지 이동을 담당합니다.
  */
 const LoginPage: React.FC = () => {
-  const [username, setUsername] = useState("admin"); // 테스트를 위한 기본값 설정
-  const [password, setPassword] = useState("password"); // 테스트를 위한 기본값 설정
+  const [username, setUsername] = useState(""); // 테스트를 위한 기본값 설정
+  const [password, setPassword] = useState(""); // 테스트를 위한 기본값 설정
   const [localError, setLocalError] = useState<string | null>(null);
 
   const dispatch = useDispatch<AppDispatch>();

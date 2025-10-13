@@ -80,7 +80,7 @@ const LoginPage: React.FC = () => {
             id="username"
             type="text"
             label="사용자 ID"
-            placeholder="사용자 ID (예: admin)"
+            placeholder="사업자 번호 (예: 12345678)"
             value={username}
             onChange={(e) => setUsername(e.target.value)}
           />

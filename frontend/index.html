@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html lang="ko">
+  <head>
+    <meta charset="UTF-8" />
+    <!-- Vite에서 파비콘을 처리하는 표준 방식 -->
+    <link rel="icon" type="image/svg+xml" href="/vite.svg" />
+
+    <link rel="icon" type="image/png" href="/src/assets/moki_logo.png" />
+
+    <!-- 반응형 디자인을 위한 필수 메타 태그 -->
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+    <!-- 애플리케이션 제목 -->
+    <title>미방문 고객 관리 시스템</title>
+
+    <!-- 
+      Tailwind CSS 사용을 위한 전역 스타일 연결 
+      (src/index.css 또는 src/App.css에 Tailwind import가 있어야 함)
+    -->
+    <link rel="stylesheet" href="/src/index.css" />
+  </head>
+  <body>
+    <!-- 
+      React 애플리케이션이 마운트될 DOM 요소입니다.
+      src/main.tsx 파일에서 이 'root' ID를 찾아서 앱을 렌더링합니다.
+    -->
+    <div id="root"></div>
+
+    <!-- Vite에서 React 애플리케이션의 진입점을 불러오는 표준 스크립트 태그 -->
+    <script type="module" src="/src/main.tsx"></script>
+  </body>
+</html>

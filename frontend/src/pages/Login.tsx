@@ -62,8 +62,7 @@ const LoginPage: React.FC = () => {
       className="flex items-center justify-center min-h-screen p-4"
       style={{ backgroundColor: "var(--color-bg-light)" }}
     >
-      {/* login-card-shadow 커스텀 CSS 클래스 적용 */}
-      <div className="w-full max-w-md p-8 space-y-8 bg-white rounded-xl login-card-shadow">
+      <div className="w-full max-w-md p-8 space-y-8 rounded-xl">
         {/* 로고 및 앱 이름 */}
         <div className="flex flex-col items-center justify-center space-y-2 pb-4">
           {/* 이미지 로고: W-200, H-100 크기 스타일을 추가했습니다. */}

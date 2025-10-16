@@ -79,10 +79,11 @@ const LoginPage: React.FC = () => {
           <Input
             id="username"
             type="text"
-            label="사용자 ID"
-            placeholder="사업자 번호 (예: 12345678)"
+            label="아이디(사업자 번호)"
+            placeholder="아이디(사업자 번호)를 입력해주세요"
             value={username}
             onChange={(e) => setUsername(e.target.value)}
+            variant="underline"
           />
 
           {/* 비밀번호 입력 필드 */}
@@ -90,9 +91,10 @@ const LoginPage: React.FC = () => {
             id="password"
             type="password"
             label="비밀번호"
-            placeholder="비밀번호 (예: password)"
+            placeholder="비밀번호를 입력해주세요"
             value={password}
             onChange={(e) => setPassword(e.target.value)}
+            variant="underline"
           />
 
           {/* 에러 메시지 표시 */}

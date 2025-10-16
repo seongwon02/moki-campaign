@@ -2,18 +2,22 @@ package com.example.moki_campaign.domain.store.controller;
 
 import com.example.moki_campaign.domain.store.dto.response.DecliningSummaryResponseDto;
 import com.example.moki_campaign.domain.store.dto.response.WeeklySummaryResponseDto;
+import com.example.moki_campaign.domain.store.entity.Store;
+import com.example.moki_campaign.global.auth.CurrentStore;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.Parameters;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 @Tag(name = "메인 대시보드", description = "메인 대시보드 요약 정보 API")
 @RestController
-@RequestMapping("/api/stores/{storeId}/main")
+@RequestMapping("/api/stores")
+@RequiredArgsConstructor
 @SecurityRequirement(name = "bearerAuth")
 public class StoreController {
 
@@ -25,9 +29,10 @@ public class StoreController {
     @Parameters({
             @Parameter(description = "매장 ID", required = true, example = "1")
     })
-    @GetMapping("/weekly")
+    @GetMapping("/{storeId}/main/weekly")
     public ResponseEntity<WeeklySummaryResponseDto> getWeeklySummary(
-            @PathVariable Long storeId
+            @PathVariable Long storeId,
+            @CurrentStore Store currentStore
     ) {
         // TODO: 실제 주간 요약 조회 로직 구현
         WeeklySummaryResponseDto response = WeeklySummaryResponseDto.builder()
@@ -51,9 +56,10 @@ public class StoreController {
     @Parameters({
             @Parameter(description = "매장 ID", required = true, example = "1")
     })
-    @GetMapping("/decline")
+    @GetMapping("/{storeId}/main/decline")
     public ResponseEntity<DecliningSummaryResponseDto> getDecliningCustomersSummary(
-            @PathVariable Long storeId
+            @PathVariable Long storeId,
+            @CurrentStore Store currentStore
     ) {
         // TODO: 실제 방문 감소 충성 고객 조회 로직 구현
         DecliningSummaryResponseDto response = DecliningSummaryResponseDto.builder()

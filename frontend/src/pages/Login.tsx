@@ -104,9 +104,11 @@ const LoginPage: React.FC = () => {
           )}
 
           {/* 로그인 버튼 */}
-          <Button type="submit" isLoading={isLoading} className="w-full h-12">
-            {isLoading ? "로그인 중..." : "로그인"}
-          </Button>
+          <div className="pt-20">
+            <Button type="submit" isLoading={isLoading} className="w-full h-12">
+              {isLoading ? "로그인 중..." : "로그인"}
+            </Button>
+          </div>
         </form>
       </div>
     </div>

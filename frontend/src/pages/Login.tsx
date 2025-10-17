@@ -62,8 +62,7 @@ const LoginPage: React.FC = () => {
       className="flex items-center justify-center min-h-screen p-4"
       style={{ backgroundColor: "var(--color-bg-light)" }}
     >
-      {/* login-card-shadow 커스텀 CSS 클래스 적용 */}
-      <div className="w-full max-w-md p-8 space-y-8 bg-white rounded-xl login-card-shadow">
+      <div className="w-full max-w-md p-8 space-y-8 rounded-xl">
         {/* 로고 및 앱 이름 */}
         <div className="flex flex-col items-center justify-center space-y-2 pb-4">
           {/* 이미지 로고: W-200, H-100 크기 스타일을 추가했습니다. */}
@@ -79,10 +78,11 @@ const LoginPage: React.FC = () => {
           <Input
             id="username"
             type="text"
-            label="사용자 ID"
-            placeholder="사업자 번호 (예: 12345678)"
+            label="아이디(사업자 번호)"
+            placeholder="아이디(사업자 번호)를 입력해주세요"
             value={username}
             onChange={(e) => setUsername(e.target.value)}
+            variant="underline"
           />
 
           {/* 비밀번호 입력 필드 */}
@@ -90,9 +90,10 @@ const LoginPage: React.FC = () => {
             id="password"
             type="password"
             label="비밀번호"
-            placeholder="비밀번호 (예: password)"
+            placeholder="비밀번호를 입력해주세요"
             value={password}
             onChange={(e) => setPassword(e.target.value)}
+            variant="underline"
           />
 
           {/* 에러 메시지 표시 */}
@@ -103,9 +104,11 @@ const LoginPage: React.FC = () => {
           )}
 
           {/* 로그인 버튼 */}
-          <Button type="submit" isLoading={isLoading} className="w-full h-12">
-            {isLoading ? "로그인 중..." : "로그인"}
-          </Button>
+          <div className="pt-20">
+            <Button type="submit" isLoading={isLoading} className="w-full h-12">
+              {isLoading ? "로그인 중..." : "로그인"}
+            </Button>
+          </div>
         </form>
       </div>
     </div>

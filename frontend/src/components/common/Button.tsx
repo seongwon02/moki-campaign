@@ -38,7 +38,7 @@ const Button: React.FC<ButtonProps> = ({
   // variant에 따른 스타일 정의
   const variantStyles = {
     primary:
-      "bg-indigo-600 text-white shadow-md hover:bg-indigo-700 focus:ring-4 focus:ring-indigo-500/50",
+      "bg-[#4A7CE9] text-white shadow-md hover:bg-[#3568D4] focus:ring-4 focus:ring-[#4A7CE9]/50",
     secondary:
       "bg-gray-200 text-gray-800 shadow-sm hover:bg-gray-300 focus:ring-4 focus:ring-gray-400/50",
     ghost:

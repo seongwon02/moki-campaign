@@ -20,8 +20,8 @@ public class SwaggerConfig {
     public OpenAPI openAPI() {
         return new OpenAPI()
                 .servers(List.of(
-                        new Server().url("http://localhost:8080").description("로컬 서버")
-                        // new Server().url("https://api.moki-campaign.com").description("개발 서버")
+                        new Server().url("http://localhost:8080").description("로컬 서버"),
+                        new Server().url("http://13.209.207.94:8080").description("개발 서버")
                 ))
                 .components(new Components()
                         .addSecuritySchemes("bearerAuth",

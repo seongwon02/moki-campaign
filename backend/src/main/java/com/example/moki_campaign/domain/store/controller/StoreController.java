@@ -1,6 +1,5 @@
 package com.example.moki_campaign.domain.store.controller;
 
-import com.example.moki_campaign.domain.store.dto.response.DecliningSummaryResponseDto;
 import com.example.moki_campaign.domain.store.dto.response.WeeklySummaryResponseDto;
 import com.example.moki_campaign.domain.store.entity.Store;
 import com.example.moki_campaign.global.auth.CurrentStore;
@@ -44,28 +43,6 @@ public class StoreController {
                 .customerCountChange(12)
                 .revisitRate(0.64)
                 .revisitRateChange(0.03)
-                .build();
-        return ResponseEntity.ok(response);
-    }
-
-    @Operation(
-            summary = "방문 감소 충성 고객 조회",
-            description = "감소하는 충성 고객들의 간단한 요약 정보를 가져옵니다."
-    )
-    @ApiResponse( responseCode = "200", description = "조회 성공")
-    @Parameters({
-            @Parameter(description = "매장 ID", required = true, example = "1")
-    })
-    @GetMapping("/{storeId}/main/decline")
-    public ResponseEntity<DecliningSummaryResponseDto> getDecliningCustomersSummary(
-            @PathVariable Long storeId,
-            @CurrentStore Store currentStore
-    ) {
-        // TODO: 실제 방문 감소 충성 고객 조회 로직 구현
-        DecliningSummaryResponseDto response = DecliningSummaryResponseDto.builder()
-                .declineCount(18)
-                .prevVisitIntv(5)
-                .curVisitIntv(2)
                 .build();
         return ResponseEntity.ok(response);
     }

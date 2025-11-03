@@ -3,7 +3,7 @@ package com.example.moki_campaign.domain.customer.controller;
 import com.example.moki_campaign.domain.customer.dto.response.CustomerDetailResponse;
 import com.example.moki_campaign.domain.customer.dto.response.CustomerListResponse;
 import com.example.moki_campaign.domain.customer.dto.response.CustomerSummaryDto;
-import com.example.moki_campaign.domain.customer.dto.response.DecliningCustomersResponse;
+import com.example.moki_campaign.domain.customer.dto.response.DeclinedLoyalSummaryResponseDto;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.Parameters;
@@ -24,14 +24,14 @@ public class CustomerController {
     @Operation(
             summary = "고객 CRM 목록 조회",
             description = """
-                    전체, 충성, 이탈 고객을 조건에 맞게 가져옵니다.
+                    전체, 충성, 이탈 고객, 충성 이탈 고객을 조건에 맞게 가져옵니다.
                     - 메인 대시보드: size=5
                     - 고객 CRM 페이지: size=20 (무한 스크롤)
                     """
     )
     @ApiResponse(responseCode = "200", description = "조회 성공")
     @Parameters({
-            @Parameter(name = "segment", description = "조회할 고객 타입 [all, loyal, churn_risk]", required = true, example = "all"),
+            @Parameter(name = "segment", description = "조회할 고객 타입 [all, loyal, churn_risk, risk_at_loyal]", required = true, example = "all"),
             @Parameter(name = "size", description = "페이지 당 사이즈 (메인은 5, CRM은 20)", example = "5"),
             @Parameter(name = "page", description = "페이지 번호 (0부터 시작)", example = "0")
     })
@@ -133,42 +133,14 @@ public class CustomerController {
             @Parameter(description = "페이지 크기", example = "20")
     })
     @GetMapping("/decline")
-    public ResponseEntity<DecliningCustomersResponse> getDecliningCustomers(
-            @PathVariable Long storeId,
-            @RequestParam(defaultValue = "0") Integer page,
-            @RequestParam(defaultValue = "20") Integer size
+    public ResponseEntity<DeclinedLoyalSummaryResponseDto> getDecliningCustomers(
+            @PathVariable Long storeId
     ) {
         // TODO: 실제 방문 감소 고객 조회 로직 구현
-        List<CustomerSummaryDto> customers = List.of(
-                CustomerSummaryDto.builder()
-                        .customerId(1L)
-                        .name("홍길동")
-                        .visitDayAgo(15)
-                        .totalVisitCount(25)
-                        .loyaltyScore(88)
-                        .build(),
-                CustomerSummaryDto.builder()
-                        .customerId(2L)
-                        .name("김철수")
-                        .visitDayAgo(20)
-                        .totalVisitCount(30)
-                        .loyaltyScore(92)
-                        .build()
+        DeclinedLoyalSummaryResponseDto response = new DeclinedLoyalSummaryResponseDto(
+                10,
+                35
         );
-
-        DecliningCustomersResponse response = DecliningCustomersResponse.builder()
-                .summary(DecliningCustomersResponse.Summary.builder()
-                        .declineCount(18)
-                        .prevVisitIntv(5)
-                        .curVisitIntv(2)
-                        .build())
-                .customers(DecliningCustomersResponse.CustomerPage.builder()
-                        .content(customers)
-                        .page(page)
-                        .size(size)
-                        .hasNext(true)
-                        .build())
-                .build();
 
         return ResponseEntity.ok(response);
     }

@@ -3,6 +3,8 @@ package com.example.moki_campaign.infra.moki.client;
 import com.example.moki_campaign.global.exception.common.BusinessException;
 import com.example.moki_campaign.global.exception.common.ErrorCode;
 import com.example.moki_campaign.infra.moki.dto.MokiLoginResponseDto;
+import com.example.moki_campaign.infra.moki.dto.MokiSalesResponseDto;
+import com.example.moki_campaign.infra.moki.dto.MokiUserListResponseDto;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.extern.slf4j.Slf4j;
@@ -12,14 +14,17 @@ import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestClient;
 
 import java.time.Duration;
+import java.util.Optional;
 
 @Component
 @Slf4j
 public class MokiClient {
 
     private static final String BASE_URL = "http://kioskmanager.co.kr/admin/api";
+    private static final String SALES_BASE_URL = "http://mobilekiosk.co.kr/api";
     
     private final RestClient restClient;
+    private final RestClient salesRestClient;
 
     public MokiClient(ObjectMapper objectMapper) {
         SimpleClientHttpRequestFactory requestFactory = new SimpleClientHttpRequestFactory();
@@ -45,6 +50,16 @@ public class MokiClient {
                     throw new BusinessException(ErrorCode.EXTERNAL_AUTH_FAILED, "모키 키오스크 서버에 일시적인 문제가 발생했습니다.");
                 })
                 .build();
+
+        // Sales API용 RestClient 생성 (간단한 에러 핸들링)
+        this.salesRestClient = RestClient.builder()
+                .baseUrl(SALES_BASE_URL)
+                .requestFactory(requestFactory)
+                .defaultStatusHandler(HttpStatusCode::isError, (request, response) -> {
+                    log.error("모키 매출 API 에러 - 상태코드: {}", response.getStatusCode());
+                    throw new BusinessException(ErrorCode.EXTERNAL_AUTH_FAILED, "모키 키오스크 매출 API 호출에 실패했습니다.");
+                })
+                .build();
     }
 
     /**
@@ -57,14 +72,12 @@ public class MokiClient {
         try {
             log.debug("모키 키오스크 로그인 요청 - mb_id: {}", businessNumber);
 
-            // 👇 [수정] POST 요청은 유지하되, Body 대신 URI에 파라미터를 추가합니다.
             MokiLoginResponseDto response = restClient.post()
                     .uri(uriBuilder -> uriBuilder
                             .path("/login.php")
                             .queryParam("mb_id", businessNumber) // 파라미터 이름: mb_id
                             .queryParam("mb_password", password) // 파라미터 이름: mb_password
                             .build())
-                    // Body가 없으므로 contentType과 body는 제거합니다.
                     .retrieve()
                     .body(MokiLoginResponseDto.class);
 
@@ -72,7 +85,6 @@ public class MokiClient {
                 log.info("모키 키오스크 로그인 성공 - 사업자번호: {}, 매장명: {}",
                         response.mbId(), response.mbName());
             } else {
-                // ... (이하 동일)
                 log.warn("모키 키오스크 로그인 실패 - 사업자번호: {}, 메시지: {}",
                         businessNumber, response != null ? response.msg() : "응답 없음");
 
@@ -91,8 +103,80 @@ public class MokiClient {
         }
     }
 
-    // 향후 다른 모키 API 추가 예시:
-    // public MokiCustomerResponseDto getCustomerInfo(String customerId) { ... }
-    // public MokiOrderResponseDto createOrder(MokiOrderRequestDto request) { ... }
-    // public List<MokiMenuResponseDto> getMenuList(String storeId) { ... }
+    /**
+     * 기간별 매출 조회
+     * @param businessNumber 사업자번호 (mb_id)
+     * @param startDate 시작 날짜 (yyyy-MM-dd)
+     * @param endDate 종료 날짜 (yyyy-MM-dd)
+     * @return Optional<MokiSalesResponseDto>
+     */
+    public Optional<MokiSalesResponseDto> getSalesData(String businessNumber, String startDate, String endDate) {
+        try {
+            log.debug("모키 매출 조회 요청 - mb_id: {}, 기간: {} ~ {}", businessNumber, startDate, endDate);
+
+            MokiSalesResponseDto response = salesRestClient.get()
+                    .uri(uriBuilder -> uriBuilder
+                            .path("/sale/weekly2.php")
+                            .queryParam("mb_id", businessNumber)
+                            .queryParam("start_date", startDate)
+                            .queryParam("end_date", endDate)
+                            .build())
+                    .retrieve()
+                    .body(MokiSalesResponseDto.class);
+
+            if (response != null) {
+                log.info("모키 매출 조회 성공 - 총 매출: {}, 건수: {}", 
+                        response.totalRevenue(), response.totalCount());
+                return Optional.of(response);
+            } else {
+                log.warn("모키 매출 조회 응답이 null입니다.");
+                return Optional.empty();
+            }
+
+        } catch (BusinessException e) {
+            throw e;
+        } catch (Exception e) {
+            log.error("모키 매출 API 호출 실패 - 사업자번호: {}, 에러: {}",
+                    businessNumber, e.getMessage(), e);
+            throw new BusinessException(ErrorCode.EXTERNAL_AUTH_FAILED, "모키 매출 데이터 조회에 실패했습니다.");
+        }
+    }
+
+    /**
+     * 특정 기간 동안 방문한 회원 리스트 조회
+     * @param businessNumber 사업자번호 (mb_id)
+     * @param startDate 시작 날짜 (yyyy-MM-dd)
+     * @param endDate 종료 날짜 (yyyy-MM-dd)
+     * @return Optional<MokiUserListResponseDto>
+     */
+    public Optional<MokiUserListResponseDto> getUserList(String businessNumber, String startDate, String endDate) {
+        try {
+            log.debug("모키 회원 리스트 조회 요청 - mb_id: {}, 기간: {} ~ {}", businessNumber, startDate, endDate);
+
+            MokiUserListResponseDto response = salesRestClient.get()
+                    .uri(uriBuilder -> uriBuilder
+                            .path("/store/userlist.php")
+                            .queryParam("mb_id", businessNumber)
+                            .queryParam("start_date", startDate)
+                            .queryParam("end_date", endDate)
+                            .build())
+                    .retrieve()
+                    .body(MokiUserListResponseDto.class);
+
+            if (response != null && response.data() != null) {
+                log.info("모키 회원 리스트 조회 성공 - 회원 수: {}", response.data().size());
+                return Optional.of(response);
+            } else {
+                log.warn("모키 회원 리스트 조회 응답이 null이거나 데이터가 없습니다.");
+                return Optional.empty();
+            }
+
+        } catch (BusinessException e) {
+            throw e;
+        } catch (Exception e) {
+            log.error("모키 회원 리스트 API 호출 실패 - 사업자번호: {}, 에러: {}",
+                    businessNumber, e.getMessage(), e);
+            throw new BusinessException(ErrorCode.EXTERNAL_AUTH_FAILED, "모키 회원 데이터 조회에 실패했습니다.");
+        }
+    }
 }

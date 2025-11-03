@@ -30,7 +30,7 @@ export const login = async (
   try {
     // 실제 로그인 엔드포인트는 /auth/login 또는 /login 이라고 가정합니다.
     const response = await api.post("/auth/login", {
-      username: credentials.username,
+      business_number: credentials.businessNumber,
       password: credentials.password,
     });
 

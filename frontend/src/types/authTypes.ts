@@ -4,7 +4,7 @@
  * 로그인 요청 시 백엔드에 전송되는 사용자 자격 증명 타입 정의
  */
 export interface AuthCredentials {
-  username: string; // 사용자 ID (사번, 이메일 등)
+  businessNumber: string; // 사업자 번호
   password: string; // 비밀번호
 }
 

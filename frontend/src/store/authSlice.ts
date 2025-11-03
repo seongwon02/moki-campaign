@@ -21,7 +21,7 @@ const initialState: AuthState = {
 // 비동기 로그인 썽크 (Thunk)
 export const loginUser = createAsyncThunk<
   string, // 최종 성공 시 반환되는 타입 (토큰)
-  AuthCredentials, // 썽크에 전달되는 인자 타입 (자격 증명)
+  AuthCredentials, // 썽크에 전달되는 인자 타입 (자격 증명: { businessNumber, password })
   { rejectValue: string } // 실패 시 rejectValue 타입 (API에서 받은 에러 메시지)
 >("auth/login", async (credentials, { rejectWithValue }) => {
   try {

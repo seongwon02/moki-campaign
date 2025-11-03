@@ -11,8 +11,8 @@ import Button from "../components/common/Button.tsx";
  * 인증 상태(Redux)를 통해 로그인 처리 및 페이지 이동을 담당합니다.
  */
 const LoginPage: React.FC = () => {
-  const [username, setUsername] = useState(""); // 테스트를 위한 기본값 설정
-  const [password, setPassword] = useState(""); // 테스트를 위한 기본값 설정
+  const [businessNumber, setBusinessNumber] = useState(""); // username -> businessNumber
+  const [password, setPassword] = useState("");
   const [localError, setLocalError] = useState<string | null>(null);
 
   const dispatch = useDispatch<AppDispatch>();
@@ -41,13 +41,15 @@ const LoginPage: React.FC = () => {
     e.preventDefault();
     setLocalError(null);
 
-    if (!username || !password) {
+    if (!businessNumber || !password) {
       setLocalError("ID와 비밀번호를 모두 입력해주세요.");
       return;
     }
 
-    // Redux Thunk 디스패치
-    const resultAction = await dispatch(loginUser({ username, password }));
+    // Redux Thunk 디스패치 (businessNumber 사용)
+    const resultAction = await dispatch(
+      loginUser({ businessNumber, password })
+    );
 
     // 로그인 성공 시 메인 대시보드로 이동
     if (loginUser.fulfilled.match(resultAction)) {
@@ -74,14 +76,14 @@ const LoginPage: React.FC = () => {
         </div>
 
         <form className="space-y-6" onSubmit={handleSubmit}>
-          {/* ID 입력 필드 */}
+          {/* ID 입력 필드 (businessNumber로 변경) */}
           <Input
-            id="username"
+            id="businessNumber"
             type="text"
             label="아이디(사업자 번호)"
             placeholder="아이디(사업자 번호)를 입력해주세요"
-            value={username}
-            onChange={(e) => setUsername(e.target.value)}
+            value={businessNumber}
+            onChange={(e) => setBusinessNumber(e.target.value)}
             variant="underline"
           />
 

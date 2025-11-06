@@ -10,6 +10,20 @@ const MainDashboard: React.FC = () => {
   const navigate = useNavigate();
   const [showSettings, setShowSettings] = useState(false);
 
+  const getWeekRange = () => {
+    const today = new Date('2025-11-06T12:00:00Z'); // Using fixed date from user context
+    const dayOfWeek = today.getDay(); // Sunday = 0, Monday = 1, ..., Saturday = 6
+    const mondayOffset = dayOfWeek === 0 ? -6 : 1 - dayOfWeek;
+    const monday = new Date(today);
+    monday.setDate(today.getDate() + mondayOffset);
+
+    const formatDate = (date: Date) => {
+      return `${date.getMonth() + 1}.${date.getDate()}`;
+    };
+
+    return `${formatDate(monday)} ~ ${formatDate(today)}`;
+  };
+
   return (
     <div className="h-screen bg-[#F2F3F7] flex flex-col items-center p-4">
       {/* Store Name Section (Fixed) */}
@@ -35,12 +49,43 @@ const MainDashboard: React.FC = () => {
       <div className="w-full max-w-md overflow-y-auto">
         {/* Section 1: This Week's Information Summary */}
         <div className="bg-white rounded-xl p-6 mb-0.5">
-          <h2 className="text-xl font-bold text-indigo-700 mb-4">
-            이번주 정보 요약
-          </h2>
-          <p className="text-gray-600">
-            이번주 정보 요약 내용이 여기에 표시됩니다.
-          </p>
+          <div className="flex justify-between items-center mb-4">
+            <h2 className="text-xl font-bold text-indigo-700">
+              이번주 정보 요약
+            </h2>
+            <span className="text-sm text-gray-500">
+              {getWeekRange()}
+            </span>
+          </div>
+          <div className="space-y-4">
+            <div className="flex justify-between items-center">
+              <span className="text-gray-600">주간 매출</span>
+              <div className="text-right">
+                <span className="font-bold text-lg text-gray-800">1,234,567원</span>
+                <p className="text-sm text-red-500">
+                  <span className="text-gray-500">저번주 대비 </span>▲ 123,456원
+                </p>
+              </div>
+            </div>
+            <div className="flex justify-between items-center">
+              <span className="text-gray-600">방문자 수</span>
+              <div className="text-right">
+                <span className="font-bold text-lg text-gray-800">123명</span>
+                <p className="text-sm text-blue-500">
+                  <span className="text-gray-500">저번주 대비 </span>▼ 12명
+                </p>
+              </div>
+            </div>
+            <div className="flex justify-between items-center">
+              <span className="text-gray-600">재방문율</span>
+              <div className="text-right">
+                <span className="font-bold text-lg text-gray-800">45%</span>
+                <p className="text-sm text-red-500">
+                  <span className="text-gray-500">저번주 대비 </span>▲ 5%
+                </p>
+              </div>
+            </div>
+          </div>
         </div>
 
         {/* Section 2: Decreased Visit Customer Management */}

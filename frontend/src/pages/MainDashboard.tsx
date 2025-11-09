@@ -259,7 +259,7 @@ const MainDashboard: React.FC = () => {
       </div>
 
       {/* Scrollable Content */}
-      <div className="w-full max-w-md overflow-y-auto">
+      <div className="w-full max-w-md overflow-y-auto hide-scrollbar">
         {/* Section 1: This Week's Information Summary */}
         <div className="bg-white xl p-6 mb-0.5">
           <div className="flex justify-between items-center mb-4">

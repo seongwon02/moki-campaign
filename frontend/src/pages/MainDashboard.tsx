@@ -4,6 +4,9 @@ import { useNavigate } from "react-router-dom";
 import Button from "../components/common/Button";
 import { type AppDispatch } from "../store";
 import SettingsPage from "./Settings.tsx";
+import moneyIcon from "../assets/icons/money.svg";
+import groupIcon from "../assets/icons/group.svg";
+import revisitIcon from "../assets/icons/revisit.svg";
 
 interface Customer {
   name: string;
@@ -266,7 +269,16 @@ const MainDashboard: React.FC = () => {
           </div>
           <div className="space-y-4">
             <div className="flex justify-between items-center">
-              <span className="text-gray-600">주간 매출</span>
+              <div className="flex items-center">
+                <img
+                  src={moneyIcon}
+                  alt="주간 매출"
+                  className="w-10 h-10 mr-2"
+                />
+                <span className="font-bold text-xl text-gray-600">
+                  주간 매출
+                </span>
+              </div>
               <div className="text-right">
                 <span className="font-bold text-lg text-gray-800">
                   1,234,567원
@@ -277,7 +289,16 @@ const MainDashboard: React.FC = () => {
               </div>
             </div>
             <div className="flex justify-between items-center">
-              <span className="text-gray-600">방문자 수</span>
+              <div className="flex items-center">
+                <img
+                  src={groupIcon}
+                  alt="방문자 수"
+                  className="w-10 h-10 mr-2"
+                />
+                <span className="font-bold text-xl text-gray-600">
+                  방문자 수
+                </span>
+              </div>
               <div className="text-right">
                 <span className="font-bold text-lg text-gray-800">123명</span>
                 <p className="text-sm text-blue-500">
@@ -286,7 +307,16 @@ const MainDashboard: React.FC = () => {
               </div>
             </div>
             <div className="flex justify-between items-center">
-              <span className="text-gray-600">재방문율</span>
+              <div className="flex items-center">
+                <img
+                  src={revisitIcon}
+                  alt="재방문율"
+                  className="w-10 h-10 mr-2"
+                />
+                <span className="font-bold text-xl text-gray-600">
+                  재방문율
+                </span>
+              </div>
               <div className="text-right">
                 <span className="font-bold text-lg text-gray-800">45%</span>
                 <p className="text-sm text-red-500">
@@ -303,10 +333,12 @@ const MainDashboard: React.FC = () => {
             방문 감소 충성 고객
           </h2>
           <p className="text-sm text-gray-700 mb-2">
-            단골 고객 중 <span className="text-blue-600">17명</span>의 방문 횟수가 감소하고 있습니다
+            단골 고객 중 <span className="text-blue-600">17명</span>의 방문
+            횟수가 감소하고 있습니다
           </p>
           <p className="text-sm text-gray-700 mb-4">
-            현재 단골 고객 중 이탈 위험 고객의 비율은 <span className="text-blue-600">24%</span>입니다
+            현재 단골 고객 중 이탈 위험 고객의 비율은{" "}
+            <span className="text-blue-600">24%</span>입니다
           </p>
           <div className="overflow-x-auto">
             <table className="min-w-full bg-white">

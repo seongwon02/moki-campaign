@@ -26,7 +26,7 @@ const MainDashboard: React.FC = () => {
   );
 
   const getWeekRange = () => {
-    const today = new Date("2025-11-06T12:00:00Z"); // Using fixed date from user context
+    const today = new Date(); // Using fixed date from user context
     const dayOfWeek = today.getDay(); // Sunday = 0, Monday = 1, ..., Saturday = 6
     const mondayOffset = dayOfWeek === 0 ? -6 : 1 - dayOfWeek;
     const monday = new Date(today);
@@ -325,11 +325,11 @@ const MainDashboard: React.FC = () => {
           <h2 className="text-lg font-bold text-black mb-4">
             방문 감소 충성 고객
           </h2>
-          <p className="text-sm text-gray-700 mb-2">
+          <p className="text-xs text-gray-700 mb-2">
             단골 고객 중 <span className="text-[#4A7CE9]">17명</span>의 방문
             횟수가 감소하고 있습니다
           </p>
-          <p className="text-sm text-gray-700 mb-4">
+          <p className="text-xs text-gray-700 mb-4">
             현재 단골 고객 중 이탈 위험 고객의 비율은{" "}
             <span className="text-[#4A7CE9]">24%</span>입니다
           </p>

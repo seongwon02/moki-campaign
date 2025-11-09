@@ -72,6 +72,20 @@ const MainDashboard: React.FC = () => {
       total_visit_count: 7,
       loyalty_score: 60,
     },
+    {
+      name: "강현우",
+      customer_id: 9,
+      visit_day_ago: 2,
+      total_visit_count: 20,
+      loyalty_score: 90,
+    },
+    {
+      name: "윤서연",
+      customer_id: 10,
+      visit_day_ago: 7,
+      total_visit_count: 14,
+      loyalty_score: 82,
+    },
   ];
 
   // Sample data for Section 3
@@ -125,6 +139,41 @@ const MainDashboard: React.FC = () => {
       total_visit_count: 1,
       loyalty_score: 10,
     },
+    {
+      name: "오지현",
+      customer_id: 8,
+      visit_day_ago: 25,
+      total_visit_count: 3,
+      loyalty_score: 40,
+    },
+    {
+      name: "강현우",
+      customer_id: 9,
+      visit_day_ago: 2,
+      total_visit_count: 20,
+      loyalty_score: 90,
+    },
+    {
+      name: "윤서연",
+      customer_id: 10,
+      visit_day_ago: 7,
+      total_visit_count: 14,
+      loyalty_score: 82,
+    },
+    {
+      name: "이하준",
+      customer_id: 11,
+      visit_day_ago: 60,
+      total_visit_count: 1,
+      loyalty_score: 5,
+    },
+    {
+      name: "박하은",
+      customer_id: 12,
+      visit_day_ago: 20,
+      total_visit_count: 6,
+      loyalty_score: 55,
+    },
   ];
 
   const churnRiskCustomers: Customer[] = [
@@ -148,6 +197,27 @@ const MainDashboard: React.FC = () => {
       visit_day_ago: 25,
       total_visit_count: 3,
       loyalty_score: 40,
+    },
+    {
+      name: "이하준",
+      customer_id: 11,
+      visit_day_ago: 60,
+      total_visit_count: 1,
+      loyalty_score: 5,
+    },
+    {
+      name: "최은지",
+      customer_id: 13,
+      visit_day_ago: 35,
+      total_visit_count: 2,
+      loyalty_score: 25,
+    },
+    {
+      name: "정우진",
+      customer_id: 14,
+      visit_day_ago: 50,
+      total_visit_count: 1,
+      loyalty_score: 8,
     },
   ];
 
@@ -251,7 +321,7 @@ const MainDashboard: React.FC = () => {
                 </tr>
               </thead>
               <tbody>
-                {loyalCustomers.map((customer) => (
+                {loyalCustomers.slice(0, 5).map((customer) => (
                   <tr key={customer.customer_id}>
                     <td className="py-2 px-4 border-b text-sm text-gray-800">
                       {customer.name}
@@ -275,7 +345,75 @@ const MainDashboard: React.FC = () => {
         {/* Section 3: CRM */}
         <div className="bg-white rounded-xl p-6">
           <h2 className="text-xl font-bold text-indigo-700 mb-4">CRM</h2>
-          <p className="text-gray-600">CRM 관련 내용이 여기에 표시됩니다.</p>
+          <div className="flex mb-4 w-full border border-gray-300 rounded-lg overflow-hidden">
+            <Button
+              onClick={() => setActiveList("all")}
+              variant={activeList === "all" ? "primary" : "secondary"}
+              className="flex-grow rounded-l-lg rounded-r-none border-r border-gray-300"
+            >
+              전체 고객
+            </Button>
+            <Button
+              onClick={() => setActiveList("loyal")}
+              variant={activeList === "loyal" ? "primary" : "secondary"}
+              className="flex-grow rounded-none border-r border-gray-300"
+            >
+              충성 고객
+            </Button>
+            <Button
+              onClick={() => setActiveList("churn")}
+              variant={activeList === "churn" ? "primary" : "secondary"}
+              className="flex-grow rounded-r-lg rounded-l-none"
+            >
+              이탈 위험
+            </Button>
+          </div>
+
+          <div className="overflow-x-auto">
+            <table className="min-w-full bg-white">
+              <thead>
+                <tr>
+                  <th className="py-2 px-4 border-b text-left text-sm font-semibold text-gray-600">
+                    이름
+                  </th>
+                  <th className="py-2 px-4 border-b text-left text-sm font-semibold text-gray-600">
+                    최근 방문
+                  </th>
+                  <th className="py-2 px-4 border-b text-left text-sm font-semibold text-gray-600">
+                    방문 횟수
+                  </th>
+                  <th className="py-2 px-4 border-b text-left text-sm font-semibold text-gray-600">
+                    단골 점수
+                  </th>
+                </tr>
+              </thead>
+              <tbody>
+                {(activeList === "all"
+                  ? allCustomers
+                  : activeList === "loyal"
+                  ? loyalCustomers
+                  : churnRiskCustomers
+                )
+                  .slice(0, 5)
+                  .map((customer) => (
+                    <tr key={customer.customer_id}>
+                      <td className="py-2 px-4 border-b text-sm text-gray-800">
+                        {customer.name}
+                      </td>
+                      <td className="py-2 px-4 border-b text-sm text-gray-800">
+                        {calculateLastVisitDate(customer.visit_day_ago)}
+                      </td>
+                      <td className="py-2 px-4 border-b text-sm text-gray-800">
+                        {customer.total_visit_count}회
+                      </td>
+                      <td className="py-2 px-4 border-b text-sm text-gray-800">
+                        {customer.loyalty_score}점
+                      </td>
+                    </tr>
+                  ))}
+              </tbody>
+            </table>
+          </div>
         </div>
       </div>
       {showSettings && <SettingsPage onClose={() => setShowSettings(false)} />}

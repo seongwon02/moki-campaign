@@ -302,6 +302,12 @@ const MainDashboard: React.FC = () => {
           <h2 className="text-xl font-bold text-indigo-700 mb-4">
             방문 감소 충성 고객
           </h2>
+          <p className="text-sm text-gray-700 mb-2">
+            단골 고객 중 <span className="text-blue-600">17명</span>의 방문 횟수가 감소하고 있습니다
+          </p>
+          <p className="text-sm text-gray-700 mb-4">
+            현재 단골 고객 중 이탈 위험 고객의 비율은 <span className="text-blue-600">24%</span>입니다
+          </p>
           <div className="overflow-x-auto">
             <table className="min-w-full bg-white">
               <thead>

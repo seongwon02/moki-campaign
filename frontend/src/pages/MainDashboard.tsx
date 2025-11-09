@@ -7,6 +7,7 @@ import SettingsPage from "./Settings.tsx";
 import moneyIcon from "../assets/icons/money.svg";
 import groupIcon from "../assets/icons/group.svg";
 import revisitIcon from "../assets/icons/revisit.svg";
+import settingIcon from "../assets/icons/setting.svg";
 
 interface Customer {
   name: string;
@@ -250,9 +251,9 @@ const MainDashboard: React.FC = () => {
           <Button
             onClick={() => setShowSettings(true)}
             variant="ghost"
-            className="p-2"
+            className="absolute bottom-2 right-1"
           >
-            설정
+            <img src={settingIcon} alt="설정" className="w-4 h-4 mr-2" />
           </Button>
         </div>
       </div>

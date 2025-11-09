@@ -1,6 +1,6 @@
 import { Routes, Route } from "react-router-dom";
 import LoginPage from "./pages/Login.tsx";
-import Dashboard from "./pages/Dashboard.tsx";
+import MainDashboard from "./pages/MainDashboard.tsx";
 import TestPage from "./pages/TestPage.tsx";
 import PrivateRoute from "./components/common/PrivateRoute.tsx";
 
@@ -16,7 +16,7 @@ const App = () => {
 
         {/* 보호된 경로 */}
         <Route element={<PrivateRoute />}>
-          <Route path="/" element={<Dashboard />} />
+          <Route path="/" element={<MainDashboard />} />
           {/* 여기에 다른 보호된 페이지들을 추가할 수 있습니다. */}
           {/* 예: <Route path="/customers" element={<CustomerPage />} /> */}
         </Route>

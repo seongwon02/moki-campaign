@@ -263,9 +263,7 @@ const MainDashboard: React.FC = () => {
         {/* Section 1: This Week's Information Summary */}
         <div className="bg-white rounded-xl p-6 mb-0.5">
           <div className="flex justify-between items-center mb-4">
-            <h2 className="text-xl font-bold text-indigo-700">
-              이번주 정보 요약
-            </h2>
+            <h2 className="text-lg font-bold text-black">이번주 정보 요약</h2>
             <span className="text-sm text-gray-500">{getWeekRange()}</span>
           </div>
           <div className="space-y-4">
@@ -276,9 +274,7 @@ const MainDashboard: React.FC = () => {
                   alt="주간 매출"
                   className="w-10 h-10 mr-2"
                 />
-                <span className="font-bold text-xl text-gray-600">
-                  주간 매출
-                </span>
+                <span className="font-bold text-xl text-black">주간 매출</span>
               </div>
               <div className="text-right">
                 <span className="font-bold text-lg text-gray-800">
@@ -296,13 +292,11 @@ const MainDashboard: React.FC = () => {
                   alt="방문자 수"
                   className="w-10 h-10 mr-2"
                 />
-                <span className="font-bold text-xl text-gray-600">
-                  방문자 수
-                </span>
+                <span className="font-bold text-xl text-black">방문자 수</span>
               </div>
               <div className="text-right">
                 <span className="font-bold text-lg text-gray-800">123명</span>
-                <p className="text-sm text-blue-500">
+                <p className="text-sm text-[#4A7CE9]">
                   <span className="text-gray-500">저번주 대비 </span>▼ 12명
                 </p>
               </div>
@@ -314,9 +308,7 @@ const MainDashboard: React.FC = () => {
                   alt="재방문율"
                   className="w-10 h-10 mr-2"
                 />
-                <span className="font-bold text-xl text-gray-600">
-                  재방문율
-                </span>
+                <span className="font-bold text-xl text-black">재방문율</span>
               </div>
               <div className="text-right">
                 <span className="font-bold text-lg text-gray-800">45%</span>
@@ -330,31 +322,31 @@ const MainDashboard: React.FC = () => {
 
         {/* Section 2: Decreased Visit Customer Management */}
         <div className="bg-white rounded-xl p-6 mb-0.5">
-          <h2 className="text-xl font-bold text-indigo-700 mb-4">
+          <h2 className="text-lg font-bold text-black mb-4">
             방문 감소 충성 고객
           </h2>
           <p className="text-sm text-gray-700 mb-2">
-            단골 고객 중 <span className="text-blue-600">17명</span>의 방문
+            단골 고객 중 <span className="text-[#4A7CE9]">17명</span>의 방문
             횟수가 감소하고 있습니다
           </p>
           <p className="text-sm text-gray-700 mb-4">
             현재 단골 고객 중 이탈 위험 고객의 비율은{" "}
-            <span className="text-blue-600">24%</span>입니다
+            <span className="text-[#4A7CE9]">24%</span>입니다
           </p>
           <div className="overflow-x-auto">
             <table className="min-w-full bg-white">
               <thead>
                 <tr>
-                  <th className="py-2 px-4 border-b text-left text-sm font-semibold text-gray-600">
+                  <th className="py-2 px-4 border-b text-left text-sm font-semibold text-[#4A7CE9]">
                     이름
                   </th>
-                  <th className="py-2 px-4 border-b text-left text-sm font-semibold text-gray-600">
+                  <th className="py-2 px-4 border-b text-left text-sm font-semibold text-[#4A7CE9]">
                     최근 방문
                   </th>
-                  <th className="py-2 px-4 border-b text-left text-sm font-semibold text-gray-600">
+                  <th className="py-2 px-4 border-b text-left text-sm font-semibold text-[#4A7CE9]">
                     방문 횟수
                   </th>
-                  <th className="py-2 px-4 border-b text-left text-sm font-semibold text-gray-600">
+                  <th className="py-2 px-4 border-b text-left text-sm font-semibold text-[#4A7CE9]">
                     단골 점수
                   </th>
                 </tr>
@@ -380,14 +372,14 @@ const MainDashboard: React.FC = () => {
             </table>
           </div>
           {/* View Details Button for Section 2 */}
-          <Button variant="secondary" className="w-full mt-4">
+          <Button variant="primary" className="w-full mt-4">
             자세히 보기
           </Button>
         </div>
 
         {/* Section 3: CRM */}
         <div className="bg-white rounded-xl p-6">
-          <h2 className="text-xl font-bold text-indigo-700 mb-4">CRM</h2>
+          <h2 className="text-lg font-bold text-black mb-4">CRM</h2>
           <div className="flex mb-4 w-full border border-gray-300 rounded-lg overflow-hidden">
             <Button
               onClick={() => setActiveList("all")}
@@ -416,16 +408,16 @@ const MainDashboard: React.FC = () => {
             <table className="min-w-full bg-white">
               <thead>
                 <tr>
-                  <th className="py-2 px-4 border-b text-left text-sm font-semibold text-gray-600">
+                  <th className="py-2 px-4 border-b text-left text-sm font-semibold text-[#4A7CE9]">
                     이름
                   </th>
-                  <th className="py-2 px-4 border-b text-left text-sm font-semibold text-gray-600">
+                  <th className="py-2 px-4 border-b text-left text-sm font-semibold text-[#4A7CE9]">
                     최근 방문
                   </th>
-                  <th className="py-2 px-4 border-b text-left text-sm font-semibold text-gray-600">
+                  <th className="py-2 px-4 border-b text-left text-sm font-semibold text-[#4A7CE9]">
                     방문 횟수
                   </th>
-                  <th className="py-2 px-4 border-b text-left text-sm font-semibold text-gray-600">
+                  <th className="py-2 px-4 border-b text-left text-sm font-semibold text-[#4A7CE9]">
                     단골 점수
                   </th>
                 </tr>
@@ -458,7 +450,7 @@ const MainDashboard: React.FC = () => {
             </table>
           </div>
           {/* View Details Button for Section 3 */}
-          <Button variant="secondary" className="w-full mt-4">
+          <Button variant="primary" className="w-full mt-4">
             자세히 보기
           </Button>
         </div>

@@ -1,8 +1,6 @@
 import React, { useState } from "react";
-import { useDispatch } from "react-redux";
 import { useNavigate } from "react-router-dom";
 import Button from "../components/common/Button";
-import { type AppDispatch } from "../store";
 import backIcon from "../assets/icons/back.svg";
 
 interface Customer {
@@ -34,6 +32,28 @@ const RiskLoyal: React.FC = () => {
             <img src={backIcon} alt="뒤로가기" className="w-2.5 h-5 mr-2" />
           </Button>
         </div>
+      </div>
+      {/* Scrollable Content */}
+      <div className="w-full max-w-md overflow-y-auto hide-scrollbar">
+        {/* Section 1: 충성 고객 이탈 정보 표기 */}
+        <div className="bg-white xl p-6 mb-0.5 flex space-x-4">
+          <div className="w-1/2">
+            {/* Left Section */}
+            <p className="text-black font-bold text-base">
+              충성 고객 중 방문 감소
+            </p>
+            <p className="text-[#4A7CE9] font-bold text-3xl">17명</p>
+          </div>
+          <div className="w-1/2">
+            {/* Right Section */}
+            <p className="text-black font-bold text-base">
+              이탈 위험 충성 고객 비율
+            </p>
+            <p className="text-[#4A7CE9] font-bold text-3xl">24%</p>
+          </div>
+        </div>
+        {/* Section 2: 이탈 위험 충성 고객 리스트 */}
+        <div className="bg-white xl p-6 mb-0.5"></div>
       </div>
     </div>
   );

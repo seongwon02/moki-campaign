@@ -242,7 +242,7 @@ const MainDashboard: React.FC = () => {
       {/* Store Name Section (Fixed) */}
       <div className="w-full max-w-md">
         <div
-          className="bg-white rounded-xl p-6 mb-0.5 relative flex items-end justify-end"
+          className="bg-white xl p-6 mb-0.5 relative flex items-end justify-end"
           style={{ minHeight: "100px" }}
         >
           <div className="absolute bottom-4 left-1/2 -translate-x-1/2 text-sm text-gray-500">
@@ -261,7 +261,7 @@ const MainDashboard: React.FC = () => {
       {/* Scrollable Content */}
       <div className="w-full max-w-md overflow-y-auto">
         {/* Section 1: This Week's Information Summary */}
-        <div className="bg-white rounded-xl p-6 mb-0.5">
+        <div className="bg-white xl p-6 mb-0.5">
           <div className="flex justify-between items-center mb-4">
             <h2 className="text-lg font-bold text-black">이번주 정보 요약</h2>
             <span className="text-sm text-gray-500">{getWeekRange()}</span>
@@ -321,7 +321,7 @@ const MainDashboard: React.FC = () => {
         </div>
 
         {/* Section 2: Decreased Visit Customer Management */}
-        <div className="bg-white rounded-xl p-6 mb-0.5">
+        <div className="bg-white xl p-6 mb-0.5">
           <h2 className="text-lg font-bold text-black mb-4">
             방문 감소 충성 고객
           </h2>
@@ -378,7 +378,7 @@ const MainDashboard: React.FC = () => {
         </div>
 
         {/* Section 3: CRM */}
-        <div className="bg-white rounded-xl p-6">
+        <div className="bg-white xl p-6">
           <h2 className="text-lg font-bold text-black mb-4">CRM</h2>
           <div className="flex mb-4 w-full border border-gray-300 rounded-lg overflow-hidden">
             <Button

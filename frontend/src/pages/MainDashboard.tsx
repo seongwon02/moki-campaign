@@ -340,6 +340,10 @@ const MainDashboard: React.FC = () => {
               </tbody>
             </table>
           </div>
+          {/* View Details Button for Section 2 */}
+          <Button variant="secondary" className="w-full mt-4">
+            자세히 보기
+          </Button>
         </div>
 
         {/* Section 3: CRM */}
@@ -414,6 +418,10 @@ const MainDashboard: React.FC = () => {
               </tbody>
             </table>
           </div>
+          {/* View Details Button for Section 3 */}
+          <Button variant="secondary" className="w-full mt-4">
+            자세히 보기
+          </Button>
         </div>
       </div>
       {showSettings && <SettingsPage onClose={() => setShowSettings(false)} />}

@@ -5,13 +5,24 @@ import Button from "../components/common/Button";
 import { type AppDispatch } from "../store";
 import SettingsPage from "./Settings.tsx";
 
+interface Customer {
+  name: string;
+  customer_id: number;
+  visit_day_ago: number;
+  total_visit_count: number;
+  loyalty_score: number;
+}
+
 const MainDashboard: React.FC = () => {
   const dispatch = useDispatch<AppDispatch>();
   const navigate = useNavigate();
   const [showSettings, setShowSettings] = useState(false);
+  const [activeList, setActiveList] = useState<"all" | "loyal" | "churn">(
+    "all"
+  );
 
   const getWeekRange = () => {
-    const today = new Date('2025-11-06T12:00:00Z'); // Using fixed date from user context
+    const today = new Date("2025-11-06T12:00:00Z"); // Using fixed date from user context
     const dayOfWeek = today.getDay(); // Sunday = 0, Monday = 1, ..., Saturday = 6
     const mondayOffset = dayOfWeek === 0 ? -6 : 1 - dayOfWeek;
     const monday = new Date(today);
@@ -22,6 +33,134 @@ const MainDashboard: React.FC = () => {
     };
 
     return `${formatDate(monday)} ~ ${formatDate(today)}`;
+  };
+
+  // Sample data for the table (to be replaced with API data)
+  const loyalCustomers: Customer[] = [
+    {
+      name: "김철수",
+      customer_id: 1,
+      visit_day_ago: 5,
+      total_visit_count: 15,
+      loyalty_score: 85,
+    },
+    {
+      name: "이영희",
+      customer_id: 2,
+      visit_day_ago: 8,
+      total_visit_count: 12,
+      loyalty_score: 78,
+    },
+    {
+      name: "박민수",
+      customer_id: 3,
+      visit_day_ago: 13,
+      total_visit_count: 10,
+      loyalty_score: 70,
+    },
+    {
+      name: "최지영",
+      customer_id: 4,
+      visit_day_ago: 15,
+      total_visit_count: 8,
+      loyalty_score: 65,
+    },
+    {
+      name: "정수진",
+      customer_id: 5,
+      visit_day_ago: 18,
+      total_visit_count: 7,
+      loyalty_score: 60,
+    },
+  ];
+
+  // Sample data for Section 3
+  const allCustomers: Customer[] = [
+    {
+      name: "김철수",
+      customer_id: 1,
+      visit_day_ago: 5,
+      total_visit_count: 15,
+      loyalty_score: 85,
+    },
+    {
+      name: "이영희",
+      customer_id: 2,
+      visit_day_ago: 8,
+      total_visit_count: 12,
+      loyalty_score: 78,
+    },
+    {
+      name: "박민수",
+      customer_id: 3,
+      visit_day_ago: 13,
+      total_visit_count: 10,
+      loyalty_score: 70,
+    },
+    {
+      name: "최지영",
+      customer_id: 4,
+      visit_day_ago: 15,
+      total_visit_count: 8,
+      loyalty_score: 65,
+    },
+    {
+      name: "정수진",
+      customer_id: 5,
+      visit_day_ago: 18,
+      total_visit_count: 7,
+      loyalty_score: 60,
+    },
+    {
+      name: "홍길동",
+      customer_id: 6,
+      visit_day_ago: 30,
+      total_visit_count: 2,
+      loyalty_score: 30,
+    },
+    {
+      name: "김민준",
+      customer_id: 7,
+      visit_day_ago: 45,
+      total_visit_count: 1,
+      loyalty_score: 10,
+    },
+  ];
+
+  const churnRiskCustomers: Customer[] = [
+    {
+      name: "홍길동",
+      customer_id: 6,
+      visit_day_ago: 30,
+      total_visit_count: 2,
+      loyalty_score: 30,
+    },
+    {
+      name: "김민준",
+      customer_id: 7,
+      visit_day_ago: 45,
+      total_visit_count: 1,
+      loyalty_score: 10,
+    },
+    {
+      name: "오지현",
+      customer_id: 8,
+      visit_day_ago: 25,
+      total_visit_count: 3,
+      loyalty_score: 40,
+    },
+  ];
+
+  const calculateLastVisitDate = (visitDayAgo: number) => {
+    const today = new Date("2025-11-06T12:00:00Z"); // Fixed date from user context
+    const lastVisitDate = new Date(today);
+    lastVisitDate.setDate(today.getDate() - visitDayAgo);
+    return `${lastVisitDate.getFullYear()}.${(lastVisitDate.getMonth() + 1)
+      .toString()
+      .padStart(2, "0")}.${lastVisitDate
+      .getDate()
+      .toString()
+      .padStart(2, "0")}`;
   };
 
   return (
@@ -53,15 +192,15 @@ const MainDashboard: React.FC = () => {
             <h2 className="text-xl font-bold text-indigo-700">
               이번주 정보 요약
             </h2>
-            <span className="text-sm text-gray-500">
-              {getWeekRange()}
-            </span>
+            <span className="text-sm text-gray-500">{getWeekRange()}</span>
           </div>
           <div className="space-y-4">
             <div className="flex justify-between items-center">
               <span className="text-gray-600">주간 매출</span>
               <div className="text-right">
-                <span className="font-bold text-lg text-gray-800">1,234,567원</span>
+                <span className="font-bold text-lg text-gray-800">
+                  1,234,567원
+                </span>
                 <p className="text-sm text-red-500">
                   <span className="text-gray-500">저번주 대비 </span>▲ 123,456원
                 </p>
@@ -91,11 +230,46 @@ const MainDashboard: React.FC = () => {
         {/* Section 2: Decreased Visit Customer Management */}
         <div className="bg-white rounded-xl p-6 mb-0.5">
           <h2 className="text-xl font-bold text-indigo-700 mb-4">
-            방문 감소 고객 관리
+            방문 감소 충성 고객
           </h2>
-          <p className="text-gray-600">
-            방문 감소 고객 관리 내용이 여기에 표시됩니다.
-          </p>
+          <div className="overflow-x-auto">
+            <table className="min-w-full bg-white">
+              <thead>
+                <tr>
+                  <th className="py-2 px-4 border-b text-left text-sm font-semibold text-gray-600">
+                    이름
+                  </th>
+                  <th className="py-2 px-4 border-b text-left text-sm font-semibold text-gray-600">
+                    최근 방문
+                  </th>
+                  <th className="py-2 px-4 border-b text-left text-sm font-semibold text-gray-600">
+                    방문 횟수
+                  </th>
+                  <th className="py-2 px-4 border-b text-left text-sm font-semibold text-gray-600">
+                    단골 점수
+                  </th>
+                </tr>
+              </thead>
+              <tbody>
+                {loyalCustomers.map((customer) => (
+                  <tr key={customer.customer_id}>
+                    <td className="py-2 px-4 border-b text-sm text-gray-800">
+                      {customer.name}
+                    </td>
+                    <td className="py-2 px-4 border-b text-sm text-gray-800">
+                      {calculateLastVisitDate(customer.visit_day_ago)}
+                    </td>
+                    <td className="py-2 px-4 border-b text-sm text-gray-800">
+                      {customer.total_visit_count}회
+                    </td>
+                    <td className="py-2 px-4 border-b text-sm text-gray-800">
+                      {customer.loyalty_score}점
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
         </div>
 
         {/* Section 3: CRM */}

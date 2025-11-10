@@ -21,11 +21,15 @@ public enum ErrorCode {
     TOKEN_EXPIRED(HttpStatus.UNAUTHORIZED, "TOKEN_EXPIRED", "만료된 토큰입니다."),
 
     // Store
-    STORE_NOT_FOUND(HttpStatus.NOT_FOUND, "STORE_NOT_FOUND", "매장 데이터를 찾을 수 없습니다.");
+    STORE_NOT_FOUND(HttpStatus.NOT_FOUND, "STORE_NOT_FOUND", "매장 데이터를 찾을 수 없습니다."),
 
     // Customer
 
     // Visit
+
+    // AI
+    INVAILD_AI_SERVER_RESPONSE(HttpStatus.INTERNAL_SERVER_ERROR, "INVAILD_AI_SERVER_RESPONSE", "AI 분석 서버로부터 유효한 응답을 받지 못했습니다."),
+    AI_SERVER_CONNECT_ERROR(HttpStatus.INTERNAL_SERVER_ERROR, "AI_SERVER_CONNECT_ERROR", "AI 분석 서버 호출에 실패했습니다.");
 
 
     public final HttpStatus status;

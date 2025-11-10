@@ -226,7 +226,7 @@ const MainDashboard: React.FC = () => {
   ];
 
   const calculateLastVisitDate = (visitDayAgo: number) => {
-    const today = new Date("2025-11-06T12:00:00Z"); // Fixed date from user context
+    const today = new Date(); // Fixed date from user context
     const lastVisitDate = new Date(today);
     lastVisitDate.setDate(today.getDate() - visitDayAgo);
     return `${lastVisitDate.getFullYear()}.${(lastVisitDate.getMonth() + 1)
@@ -372,7 +372,11 @@ const MainDashboard: React.FC = () => {
             </table>
           </div>
           {/* View Details Button for Section 2 */}
-          <Button variant="primary" className="w-full mt-4" onClick={() => navigate('/risk-loyal')}>
+          <Button
+            variant="primary"
+            className="w-full mt-4"
+            onClick={() => navigate("/risk-loyal")}
+          >
             자세히 보기
           </Button>
         </div>
@@ -450,7 +454,11 @@ const MainDashboard: React.FC = () => {
             </table>
           </div>
           {/* View Details Button for Section 3 */}
-          <Button variant="primary" className="w-full mt-4">
+          <Button
+            variant="primary"
+            className="w-full mt-4"
+            onClick={() => navigate("/crm")}
+          >
             자세히 보기
           </Button>
         </div>

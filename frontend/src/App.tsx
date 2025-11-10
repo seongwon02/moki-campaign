@@ -4,6 +4,7 @@ import MainDashboard from "./pages/MainDashboard.tsx";
 import TestPage from "./pages/TestPage.tsx";
 import PrivateRoute from "./components/common/PrivateRoute.tsx";
 import RiskLoyal from "./pages/RiskLoyal.tsx";
+import CRM from "./pages/CRM.tsx";
 
 const App = () => {
   return (
@@ -19,6 +20,7 @@ const App = () => {
         <Route element={<PrivateRoute />}>
           <Route path="/" element={<MainDashboard />} />
           <Route path="/risk-loyal" element={<RiskLoyal />} />
+          <Route path="/crm" element={<CRM />} />
           {/* 여기에 다른 보호된 페이지들을 추가할 수 있습니다. */}
           {/* 예: <Route path="/customers" element={<CustomerPage />} /> */}
         </Route>

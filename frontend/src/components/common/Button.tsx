@@ -44,7 +44,7 @@ const Button: React.FC<ButtonProps> = ({
     ghost:
       "bg-transparent text-[#4A7CE9]-600 hover:bg-[#3568D4]-50 focus:ring-4 focus:ring-[#4A7CE9]-500/50",
     plain:
-      "bg-transparent text-gray-400 text-base underline hover:bg-gray-300 focus:ring-4 focus:ring-gray-400/50",
+      "bg-transparent text-gray-400 text-base hover:bg-gray-300 focus:ring-4 focus:ring-gray-400/50",
   };
 
   // 비활성화 및 로딩 상태 스타일

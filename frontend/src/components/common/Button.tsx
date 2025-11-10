@@ -1,7 +1,7 @@
 import { type ButtonHTMLAttributes } from "react";
 
 // 버튼의 시각적 스타일을 정의하는 타입
-type ButtonVariant = "primary" | "secondary" | "ghost";
+type ButtonVariant = "primary" | "secondary" | "ghost" | "plain";
 
 // Button 컴포넌트의 Props 정의
 interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
@@ -42,7 +42,9 @@ const Button: React.FC<ButtonProps> = ({
     secondary:
       "bg-gray-200 text-gray-800 shadow-sm hover:bg-gray-300 focus:ring-4 focus:ring-gray-400/50",
     ghost:
-      "bg-transparent text-indigo-600 hover:bg-indigo-50 focus:ring-4 focus:ring-indigo-500/50",
+      "bg-transparent text-[#4A7CE9]-600 hover:bg-[#3568D4]-50 focus:ring-4 focus:ring-[#4A7CE9]-500/50",
+    plain:
+      "bg-transparent text-gray-400 text-base underline hover:bg-gray-300 focus:ring-4 focus:ring-gray-400/50",
   };
 
   // 비활성화 및 로딩 상태 스타일

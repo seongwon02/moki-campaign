@@ -13,6 +13,35 @@ interface Customer {
 
 const RiskLoyal: React.FC = () => {
   const navigate = useNavigate();
+  const [visibleCount, setVisibleCount] = useState(25);
+
+  const AtRiskLoyalCustomers: Customer[] = Array.from(
+    { length: 50 },
+    (_, i) => ({
+      name: `고객 ${i + 1}`,
+      customer_id: i + 1,
+      visit_day_ago: Math.floor(Math.random() * 60) + 1, // 1 to 60 days ago
+      total_visit_count: Math.floor(Math.random() * 20) + 1, // 1 to 20 visits
+      loyalty_score: Math.floor(Math.random() * 50) + 50, // 50 to 100 loyalty score
+    })
+  );
+
+  const calculateLastVisitDate = (visitDayAgo: number) => {
+    const today = new Date("2025-11-06T12:00:00Z"); // Fixed date from user context
+    const lastVisitDate = new Date(today);
+    lastVisitDate.setDate(today.getDate() - visitDayAgo);
+    return `${lastVisitDate.getFullYear()}.${(lastVisitDate.getMonth() + 1)
+      .toString()
+      .padStart(2, "0")}.${lastVisitDate
+      .getDate()
+      .toString()
+      .padStart(2, "0")}`;
+  };
+
+  const handleShowMore = () => {
+    setVisibleCount((prevCount) => prevCount + 25);
+  };
+
   return (
     <div className="h-screen bg-[#F2F3F7] flex flex-col items-center p-4">
       {/* Title Section (Fixed) */}
@@ -53,7 +82,55 @@ const RiskLoyal: React.FC = () => {
           </div>
         </div>
         {/* Section 2: 이탈 위험 충성 고객 리스트 */}
-        <div className="bg-white xl p-6 mb-0.5"></div>
+        <div className="bg-white xl p-6 mb-0.5">
+          <div className="overflow-x-auto">
+            <table className="min-w-full bg-white">
+              <thead>
+                <tr>
+                  <th className="py-2 px-4 border-b text-left text-sm font-semibold text-[#4A7CE9]">
+                    이름
+                  </th>
+                  <th className="py-2 px-4 border-b text-left text-sm font-semibold text-[#4A7CE9]">
+                    최근 방문
+                  </th>
+                  <th className="py-2 px-4 border-b text-left text-sm font-semibold text-[#4A7CE9]">
+                    방문 횟수
+                  </th>
+                  <th className="py-2 px-4 border-b text-left text-sm font-semibold text-[#4A7CE9]">
+                    단골 점수
+                  </th>
+                </tr>
+              </thead>
+              <tbody>
+                {AtRiskLoyalCustomers.slice(0, visibleCount).map((customer) => (
+                  <tr key={customer.customer_id}>
+                    <td className="py-2 px-4 border-b text-sm text-gray-800">
+                      {customer.name}
+                    </td>
+                    <td className="py-2 px-4 border-b text-sm text-gray-800">
+                      {calculateLastVisitDate(customer.visit_day_ago)}
+                    </td>
+                    <td className="py-2 px-4 border-b text-sm text-gray-800">
+                      {customer.total_visit_count}회
+                    </td>
+                    <td className="py-2 px-4 border-b text-sm text-gray-800">
+                      {customer.loyalty_score}점
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+          {visibleCount < AtRiskLoyalCustomers.length && (
+            <Button
+              variant="plain"
+              className="w-full mt-4"
+              onClick={handleShowMore}
+            >
+              더보기
+            </Button>
+          )}
+        </div>
       </div>
     </div>
   );

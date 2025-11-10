@@ -1,5 +1,5 @@
 # 베이스 이미지 선택
-FROM openjdk:17-jdk-slim
+FROM eclipse-temurin:17-jdk-jammy
 
 # 작업 디렉토리 설정
 WORKDIR /app

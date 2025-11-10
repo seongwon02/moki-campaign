@@ -15,6 +15,7 @@ import com.example.moki_campaign.infra.ai.dto.AiCustomerDataOutputDto;
 import com.example.moki_campaign.infra.ai.dto.AiCustomerDataResponseDto;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -36,6 +37,8 @@ public class CustomerServiceImpl implements CustomerService {
     private final AiClient aiClient;
 
     // 전체 매장의 고객들에 대한 ai 고객 분석
+    // 테스트 위해 @Async 추가(테스트 완료하면 테스트 로직 삭제 예정)
+    @Async
     @Override
     public void analyzeAllStores() {
 

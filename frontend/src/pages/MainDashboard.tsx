@@ -372,7 +372,7 @@ const MainDashboard: React.FC = () => {
             </table>
           </div>
           {/* View Details Button for Section 2 */}
-          <Button variant="primary" className="w-full mt-4">
+          <Button variant="primary" className="w-full mt-4" onClick={() => navigate('/risk-loyal')}>
             자세히 보기
           </Button>
         </div>

@@ -1,24 +1,15 @@
 import React, { useState } from "react";
-import { useDispatch } from "react-redux";
 import { useNavigate } from "react-router-dom";
 import Button from "../components/common/Button";
-import { type AppDispatch } from "../store";
 import SettingsPage from "./Settings.tsx";
 import moneyIcon from "../assets/icons/money.svg";
 import groupIcon from "../assets/icons/group.svg";
 import revisitIcon from "../assets/icons/revisit.svg";
 import settingIcon from "../assets/icons/setting.svg";
-
-interface Customer {
-  name: string;
-  customer_id: number;
-  visit_day_ago: number;
-  total_visit_count: number;
-  loyalty_score: number;
-}
+import type { Customer } from "../types/customerTypes.ts";
+import CustomerList from "../components/common/CustomerList.tsx";
 
 const MainDashboard: React.FC = () => {
-  const dispatch = useDispatch<AppDispatch>();
   const navigate = useNavigate();
   const [showSettings, setShowSettings] = useState(false);
   const [activeList, setActiveList] = useState<"all" | "loyal" | "churn">(
@@ -225,17 +216,12 @@ const MainDashboard: React.FC = () => {
     },
   ];
 
-  const calculateLastVisitDate = (visitDayAgo: number) => {
-    const today = new Date(); // Fixed date from user context
-    const lastVisitDate = new Date(today);
-    lastVisitDate.setDate(today.getDate() - visitDayAgo);
-    return `${lastVisitDate.getFullYear()}.${(lastVisitDate.getMonth() + 1)
-      .toString()
-      .padStart(2, "0")}.${lastVisitDate
-      .getDate()
-      .toString()
-      .padStart(2, "0")}`;
-  };
+  const currentCrmCustomers =
+    activeList === "all"
+      ? allCustomers
+      : activeList === "loyal"
+      ? loyalCustomers
+      : churnRiskCustomers;
 
   return (
     <div className="h-screen bg-[#F2F3F7] flex flex-col items-center p-4">
@@ -333,44 +319,7 @@ const MainDashboard: React.FC = () => {
             현재 단골 고객 중 이탈 위험 고객의 비율은{" "}
             <span className="text-[#4A7CE9]">24%</span>입니다
           </p>
-          <div className="overflow-x-auto">
-            <table className="min-w-full bg-white">
-              <thead>
-                <tr>
-                  <th className="py-2 px-4 border-b text-left text-sm font-semibold text-[#4A7CE9]">
-                    이름
-                  </th>
-                  <th className="py-2 px-4 border-b text-left text-sm font-semibold text-[#4A7CE9]">
-                    최근 방문
-                  </th>
-                  <th className="py-2 px-4 border-b text-left text-sm font-semibold text-[#4A7CE9]">
-                    방문 횟수
-                  </th>
-                  <th className="py-2 px-4 border-b text-left text-sm font-semibold text-[#4A7CE9]">
-                    단골 점수
-                  </th>
-                </tr>
-              </thead>
-              <tbody>
-                {loyalCustomers.slice(0, 5).map((customer) => (
-                  <tr key={customer.customer_id}>
-                    <td className="py-2 px-4 border-b text-sm text-gray-800">
-                      {customer.name}
-                    </td>
-                    <td className="py-2 px-4 border-b text-sm text-gray-800">
-                      {calculateLastVisitDate(customer.visit_day_ago)}
-                    </td>
-                    <td className="py-2 px-4 border-b text-sm text-gray-800">
-                      {customer.total_visit_count}회
-                    </td>
-                    <td className="py-2 px-4 border-b text-sm text-gray-800">
-                      {customer.loyalty_score}점
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
+          <CustomerList customers={loyalCustomers.slice(0, 5)} />
           {/* View Details Button for Section 2 */}
           <Button
             variant="primary"
@@ -408,51 +357,7 @@ const MainDashboard: React.FC = () => {
             </Button>
           </div>
 
-          <div className="overflow-x-auto">
-            <table className="min-w-full bg-white">
-              <thead>
-                <tr>
-                  <th className="py-2 px-4 border-b text-left text-sm font-semibold text-[#4A7CE9]">
-                    이름
-                  </th>
-                  <th className="py-2 px-4 border-b text-left text-sm font-semibold text-[#4A7CE9]">
-                    최근 방문
-                  </th>
-                  <th className="py-2 px-4 border-b text-left text-sm font-semibold text-[#4A7CE9]">
-                    방문 횟수
-                  </th>
-                  <th className="py-2 px-4 border-b text-left text-sm font-semibold text-[#4A7CE9]">
-                    단골 점수
-                  </th>
-                </tr>
-              </thead>
-              <tbody>
-                {(activeList === "all"
-                  ? allCustomers
-                  : activeList === "loyal"
-                  ? loyalCustomers
-                  : churnRiskCustomers
-                )
-                  .slice(0, 5)
-                  .map((customer) => (
-                    <tr key={customer.customer_id}>
-                      <td className="py-2 px-4 border-b text-sm text-gray-800">
-                        {customer.name}
-                      </td>
-                      <td className="py-2 px-4 border-b text-sm text-gray-800">
-                        {calculateLastVisitDate(customer.visit_day_ago)}
-                      </td>
-                      <td className="py-2 px-4 border-b text-sm text-gray-800">
-                        {customer.total_visit_count}회
-                      </td>
-                      <td className="py-2 px-4 border-b text-sm text-gray-800">
-                        {customer.loyalty_score}점
-                      </td>
-                    </tr>
-                  ))}
-              </tbody>
-            </table>
-          </div>
+          <CustomerList customers={currentCrmCustomers.slice(0, 5)} />
           {/* View Details Button for Section 3 */}
           <Button
             variant="primary"

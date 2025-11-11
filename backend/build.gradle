@@ -60,6 +60,10 @@ dependencies {
 	// CI/CD (Health Check)
 	implementation 'org.springframework.boot:spring-boot-starter-actuator'
 
+	// Retry
+	implementation 'org.springframework.retry:spring-retry'
+	implementation 'org.springframework:spring-aspects'
+
 	// Database
 	runtimeOnly 'com.h2database:h2' // 개발 환경
 	runtimeOnly 'com.mysql:mysql-connector-j' // 운영 환경

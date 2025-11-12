@@ -18,6 +18,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.transaction.annotation.Propagation;
 
 import java.time.LocalDate;
 import java.time.YearMonth;
@@ -68,8 +69,9 @@ public class CustomerServiceImpl implements CustomerService {
     }
 
     // 특정 매장의 고객을 대상으로 ai 분석
+    // 항상 새로운 트렌젝션을 시작
     @Override
-    @Transactional
+    @Transactional(propagation = Propagation.REQUIRES_NEW)
     public void analyzeStore(Store store) {
 
         try {

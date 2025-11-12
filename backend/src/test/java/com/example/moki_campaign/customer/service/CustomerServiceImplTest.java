@@ -12,14 +12,14 @@ import com.example.moki_campaign.infra.ai.client.AiClient;
 import com.example.moki_campaign.infra.ai.dto.AiCustomerDataInputDto;
 import com.example.moki_campaign.infra.ai.dto.AiCustomerDataOutputDto;
 import com.example.moki_campaign.infra.ai.dto.AiCustomerDataResponseDto;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;
-import org.mockito.InjectMocks;
 import org.mockito.Mock;
-import org.mockito.Spy;
 import org.mockito.junit.jupiter.MockitoExtension;
 
+import java.lang.reflect.Field;
 import java.time.LocalDate;
 import java.time.YearMonth;
 import java.util.List;
@@ -27,11 +27,15 @@ import java.util.List;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.ArgumentMatchers.anyList;
+import static org.mockito.ArgumentMatchers.anyLong;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.*;
+import static org.mockito.Mockito.never;
 
 @ExtendWith(MockitoExtension.class)
-class CustomerServiceImplTest {
+public class CustomerServiceImplTest {
 
     @Mock
     private StoreRepository storeRepository;
@@ -42,9 +46,24 @@ class CustomerServiceImplTest {
     @Mock
     private AiClient aiClient;
 
-    @Spy
-    @InjectMocks
     private CustomerServiceImpl customerService;
+
+    @BeforeEach
+    void setUp() throws Exception {
+        CustomerServiceImpl realService = new CustomerServiceImpl(
+                storeRepository,
+                customerRepository,
+                dailyVisitRepository,
+                aiClient,
+                null
+        );
+
+        customerService = spy(realService);
+
+        Field selfField = CustomerServiceImpl.class.getDeclaredField("self");
+        selfField.setAccessible(true);
+        selfField.set(customerService, customerService);
+    }
 
     @Test
     void 여러매장_분석_성공() {

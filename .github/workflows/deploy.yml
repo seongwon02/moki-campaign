@@ -42,8 +42,8 @@ jobs:
       - name: Build Backend Docker image
         working-directory: ./backend
         run: |
-          docker build -t knu-connect-be:${{ github.sha }} .
-          docker save knu-connect-be:${{ github.sha }} > ../app.tar
+          docker build -t moki-be:${{ github.sha }} .          # <--- [이름 변경]
+          docker save moki-be:${{ github.sha }} > ../app.tar    # <--- [이름 변경]
 
       - name: Upload Backend artifact
         uses: actions/upload-artifact@v4
@@ -65,7 +65,7 @@ jobs:
           path: ai.tar
 
   deploy-all:
-    needs: build-all # --- [수정] 의존성 변경
+    needs: build-all
     runs-on: ubuntu-latest
     if: github.ref == 'refs/heads/main'
 
@@ -98,13 +98,11 @@ jobs:
           echo "$PRIVATE_KEY" > private_key.pem
           chmod 600 private_key.pem
 
-          # --- [수정] 2개 파일 전송
           echo '=== Docker 이미지 2개 전송 ==='
           scp -i private_key.pem -o StrictHostKeyChecking=no app.tar ${USER}@${HOST}:/home/${USER}/
           scp -i private_key.pem -o StrictHostKeyChecking=no ai.tar ${USER}@${HOST}:/home/${USER}/
           echo '✅ 이미지 전송 완료'
 
-          # --- [수정] SSH 스크립트 (AI 컨테이너 실행 추가)
           ssh -i private_key.pem -o StrictHostKeyChecking=no ${USER}@${HOST} "
             set -e
 
@@ -114,15 +112,18 @@ jobs:
             docker load < /home/${USER}/ai.tar
 
             echo '=== 3. 기존 컨테이너 정리 ==='
-            docker stop knu-connect-be 2>/dev/null || echo '기존 백엔드 컨테이너 없음'
-            docker rm knu-connect-be 2>/dev/null || echo '삭제할 백엔드 컨테이너 없음'
+            docker stop moki-be 2>/dev/null || echo '기존 백엔드 컨테이너 없음'  
+            docker rm moki-be 2>/dev/null || echo '삭제할 백엔드 컨테이너 없음'
             
             docker stop moki-ai 2>/dev/null || echo '기존 AI 컨테이너 없음'
             docker rm moki-ai 2>/dev/null || echo '삭제할 AI 컨테이너 없음'
 
+            docker network create moki-net 2>/dev/null || echo 'moki-net 네트워크 이미 존재함'
+
             echo '=== 4. 새로운 AI 컨테이너 실행 ==='
             docker run -d \
               --name moki-ai \
+              --network moki-net \
               --restart unless-stopped \
               -p 8000:8000 \
               moki-ai-server:${IMAGE_TAG}
@@ -130,7 +131,8 @@ jobs:
 
             echo '=== 5. 새로운 백엔드 컨테이너 실행 ==='
             docker run -d \
-              --name knu-connect-be \
+              --name moki-be \
+              --network moki-net \
               --restart unless-stopped \
               -p 8080:8080 \
               -e DB_HOST=${DB_HOST} \
@@ -141,9 +143,9 @@ jobs:
               -e JWT_SECRET=${JWT_SECRET} \
               -e JWT_ACCESS_EXP_SECONDS=${JWT_ACCESS_EXP_SECONDS} \
               -e AI_SERVICE_URL=${AI_SERVICE_URL} \
-              knu-connect-be:${IMAGE_TAG}
+              moki-be:${IMAGE_TAG}
             
-            echo '✅ 백엔드 컨테이너 시작됨 (ID: $(docker ps -q -f name=knu-connect-be))'
+            echo '✅ 백엔드 컨테이너 시작됨 (ID: $(docker ps -q -f name=moki-be))'
             
             echo '=== 6. AI 헬스체크 (최대 30초 대기) ==='
             for i in {1..15}; do
@@ -157,9 +159,9 @@ jobs:
 
             echo '=== 7. 백엔드 헬스체크 (최대 60초 대기) ==='
             for i in {1..30}; do
-              if ! docker ps | grep -q knu-connect-be; then
+              if ! docker ps | grep -q moki-be; then
                 echo '❌ 백엔드 컨테이너가 중지되었습니다!'
-                docker logs knu-connect-be --tail 100
+                docker logs moki-be --tail 100
                 exit 1
               fi
               
@@ -181,7 +183,7 @@ jobs:
 
             echo '❌ 헬스체크 실패 - 60초 내에 시작하지 못했습니다.'
             echo '=== 백엔드 로그 ==='
-            docker logs knu-connect-be
+            docker logs moki-be
             echo '=== AI 로그 ==='
             docker logs moki-ai
             exit 1

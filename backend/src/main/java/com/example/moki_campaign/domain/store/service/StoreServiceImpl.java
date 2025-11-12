@@ -80,15 +80,16 @@ public class StoreServiceImpl implements StoreService {
 
         double revisitRateChange = thisWeekRevisitRate - lastWeekRevisitRate;
 
-        return WeeklySummaryResponseDto.builder()
-                .startDate(thisWeekStart.format(DATE_FORMATTER))
-                .endDate(thisWeekEnd.format(DATE_FORMATTER))
-                .totalSales(thisWeekSales)
-                .salesChange(salesChange)
-                .visitedCustomerCount(thisWeekVisitors)
-                .customerCountChange(customerCountChange)
-                .revisitRate(thisWeekRevisitRate)
-                .revisitRateChange(revisitRateChange)
-                .build();
+        return new WeeklySummaryResponseDto(
+                store.getName(),
+                thisWeekStart.format(DATE_FORMATTER),
+                thisWeekEnd.format(DATE_FORMATTER),
+                thisWeekSales,
+                salesChange,
+                thisWeekVisitors,
+                customerCountChange,
+                thisWeekRevisitRate,
+                revisitRateChange
+        );
     }
 }

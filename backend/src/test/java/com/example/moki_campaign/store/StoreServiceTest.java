@@ -61,19 +61,19 @@ class StoreServiceTest {
 
         // then
         assertThat(result).isNotNull();
-        assertThat(result.getStartDate()).matches("\\d{4}-\\d{2}-\\d{2}");
-        assertThat(result.getEndDate()).matches("\\d{4}-\\d{2}-\\d{2}");
+        assertThat(result.startDate()).matches("\\d{4}-\\d{2}-\\d{2}");
+        assertThat(result.endDate()).matches("\\d{4}-\\d{2}-\\d{2}");
 
         // 매출 검증
-        assertThat(result.getTotalSales()).isEqualTo(10000L);
-        assertThat(result.getSalesChange()).isEqualTo(2000L); // 10000 - 8000
+        assertThat(result.totalSales()).isEqualTo(10000L);
+        assertThat(result.salesChange()).isEqualTo(2000L); // 10000 - 8000
 
         // 방문 수 검증
-        assertThat(result.getVisitedCustomerCount()).isEqualTo(120);
-        assertThat(result.getCustomerCountChange()).isEqualTo(20); // 120 - 100
+        assertThat(result.visitedCustomerCount()).isEqualTo(120);
+        assertThat(result.customerCountChange()).isEqualTo(20); // 120 - 100
 
         // 재방문율 검증
-        assertThat(result.getRevisitRate()).isEqualTo(0.5);
-        assertThat(result.getRevisitRateChange()).isCloseTo(-0.1666, within(0.0001));
+        assertThat(result.revisitRate()).isEqualTo(0.5);
+        assertThat(result.revisitRateChange()).isCloseTo(-0.1666, within(0.0001));
     }
 }

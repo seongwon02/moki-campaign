@@ -1,22 +1,15 @@
 package com.example.moki_campaign.domain.admin.controller;
 
-import com.example.moki_campaign.domain.admin.dto.CustomerSeedRequestDto;
-import com.example.moki_campaign.domain.admin.dto.DailyVisitSeedRequestDto;
-import com.example.moki_campaign.domain.admin.service.DataSeedingService;
-import com.example.moki_campaign.domain.customer.entity.Customer;
 import com.example.moki_campaign.domain.customer.service.CustomerService;
-import com.example.moki_campaign.domain.visit.entity.DailyVisit;
 import com.example.moki_campaign.domain.visit.service.DailyVisitCreationService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.tags.Tag;
-import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -29,7 +22,6 @@ import org.springframework.web.bind.annotation.RestController;
 public class CustomerAnalysisAdminController {
 
     private final CustomerService customerService;
-    private final DataSeedingService dataSeedingService;
     private final DailyVisitCreationService dailyVisitCreationService; // 랜덤 방문 생성 서비스
 
     @Operation(summary = "AI 고객 분석 수동 실행 (비동기)",
@@ -55,28 +47,4 @@ public class CustomerAnalysisAdminController {
         }
     }
 
-    @Operation(summary = "[수동] 특정 고객 1명 생성",
-            description = "JSON 바디에 명시된 정보로 '새로운 고객' 1명을 DB에 직접 생성합니다.")
-    @ApiResponse(responseCode = "201", description = "고객 생성 성공")
-    @PostMapping("/seed/customer")
-    public ResponseEntity<Customer> createSpecificCustomer(
-            @Valid @RequestBody CustomerSeedRequestDto customerDto
-    ) {
-        log.warn("========= 수동 '특정 고객' 생성 요청 (Admin) =========");
-        Customer createdCustomer = dataSeedingService.createSpecificCustomer(customerDto);
-        return ResponseEntity.status(HttpStatus.CREATED).body(createdCustomer);
-    }
-
-    @Operation(summary = "[수동] 특정 방문기록 1건 생성 (고객 통계 업데이트 포함)",
-            description = "JSON 바디에 명시된 정보로 '방문 기록' 1건을 DB에 직접 생성합니다."
-    )
-    @ApiResponse(responseCode = "201", description = "방문 기록 생성 성공")
-    @PostMapping("/seed/visit")
-    public ResponseEntity<DailyVisit> createSpecificVisit(
-            @Valid @RequestBody DailyVisitSeedRequestDto visitDto
-    ) {
-        log.warn("========= 수동 '특정 방문' 생성 요청 (Admin) =========");
-        DailyVisit createdVisit = dataSeedingService.createSpecificVisit(visitDto);
-        return ResponseEntity.status(HttpStatus.CREATED).body(createdVisit);
-    }
 }

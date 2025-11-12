@@ -2,14 +2,8 @@ import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import Button from "../components/common/Button";
 import backIcon from "../assets/icons/back.svg";
-
-interface Customer {
-  name: string;
-  customer_id: number;
-  visit_day_ago: number;
-  total_visit_count: number;
-  loyalty_score: number;
-}
+import type { Customer } from "../types/customerTypes";
+import CustomerList from "../components/common/CustomerList";
 
 const CRM: React.FC = () => {
   const navigate = useNavigate();
@@ -45,18 +39,6 @@ const CRM: React.FC = () => {
   const handleListChange = (list: "all" | "loyal" | "churn") => {
     setActiveList(list);
     setVisibleCount(25);
-  };
-
-  const calculateLastVisitDate = (visitDayAgo: number) => {
-    const today = new Date("2025-11-06T12:00:00Z"); // Fixed date from user context
-    const lastVisitDate = new Date(today);
-    lastVisitDate.setDate(today.getDate() - visitDayAgo);
-    return `${lastVisitDate.getFullYear()}.${(lastVisitDate.getMonth() + 1)
-      .toString()
-      .padStart(2, "0")}.${lastVisitDate
-      .getDate()
-      .toString()
-      .padStart(2, "0")}`;
   };
 
   const handleShowMore = () => {
@@ -117,55 +99,12 @@ const CRM: React.FC = () => {
             </Button>
           </div>
 
-          <div className="overflow-x-auto">
-            <table className="min-w-full bg-white">
-              <thead>
-                <tr>
-                  <th className="py-2 px-4 border-b text-left text-sm font-semibold text-[#4A7CE9]">
-                    이름
-                  </th>
-                  <th className="py-2 px-4 border-b text-left text-sm font-semibold text-[#4A7CE9]">
-                    최근 방문
-                  </th>
-                  <th className="py-2 px-4 border-b text-left text-sm font-semibold text-[#4A7CE9]">
-                    방문 횟수
-                  </th>
-                  <th className="py-2 px-4 border-b text-left text-sm font-semibold text-[#4A7CE9]">
-                    단골 점수
-                  </th>
-                </tr>
-              </thead>
-              <tbody>
-                {currentCustomers
-                  .slice(0, visibleCount)
-                  .map((customer) => (
-                    <tr key={customer.customer_id}>
-                      <td className="py-2 px-4 border-b text-sm text-gray-800">
-                        {customer.name}
-                      </td>
-                      <td className="py-2 px-4 border-b text-sm text-gray-800">
-                        {calculateLastVisitDate(customer.visit_day_ago)}
-                      </td>
-                      <td className="py-2 px-4 border-b text-sm text-gray-800">
-                        {customer.total_visit_count}회
-                      </td>
-                      <td className="py-2 px-4 border-b text-sm text-gray-800">
-                        {customer.loyalty_score}점
-                      </td>
-                    </tr>
-                  ))}
-              </tbody>
-            </table>
-          </div>
-          {visibleCount < currentCustomers.length && (
-            <Button
-              variant="plain"
-              className="w-full mt-4"
-              onClick={handleShowMore}
-            >
-              더보기
-            </Button>
-          )}
+          <CustomerList
+            customers={currentCustomers}
+            visibleCount={visibleCount}
+            onShowMore={handleShowMore}
+            baseDateString="2025-11-06T12:00:00Z"
+          />
         </div>
       </div>
     </div>

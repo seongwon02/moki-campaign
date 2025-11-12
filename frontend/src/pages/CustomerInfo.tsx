@@ -1,10 +1,50 @@
-import React, { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import React, { useState, useEffect } from "react";
+import { useNavigate, useParams } from "react-router-dom";
 import Button from "../components/common/Button";
 import backIcon from "../assets/icons/back.svg";
+import type { CustomerDetail } from "../types/customerTypes";
+import { calculateLastVisitDate } from "../utils/dateUtils";
 
 const CustomerInfo: React.FC = () => {
   const navigate = useNavigate();
+  const { customerId } = useParams<{ customerId: string }>();
+  const [customerData, setCustomerData] = useState<CustomerDetail | null>(null);
+
+  useEffect(() => {
+    const fetchCustomerDetails = async () => {
+      // Simulate API call
+      const mockData: CustomerDetail = {
+        name: "홍길동",
+        visit: {
+          total_visit_count: 23,
+          visit_day_ago: 5,
+        },
+        analytics: {
+          visit_frequency: [
+            {
+              month: "2025-09",
+              count: 5,
+            },
+          ],
+        },
+        customer_id: 1,
+        phone_number: "010-1234-5678",
+        total_spent: 500000,
+        loyalty_score: 85,
+        churn_risk_level: "LOW",
+        current_points: 1500,
+      };
+      // In a real application, we would fetch data from an API:
+      // const response = await fetch(`/api/customers/${customerId}`);
+      // const data = await response.json();
+      setCustomerData(mockData);
+    };
+
+    if (customerId) {
+      fetchCustomerDetails();
+    }
+  }, [customerId]);
+
   return (
     <div className="h-screen bg-[#F2F3F7] flex flex-col items-center p-4">
       {/* Title Section (Fixed) */}

@@ -45,6 +45,33 @@ const CustomerInfo: React.FC = () => {
     }
   }, [customerId]);
 
+  if (!customerData) {
+    return (
+      <div className="h-screen bg-[#F2F3F7] flex flex-col items-center p-4">
+        <div className="w-full max-w-md">
+          <div
+            className="bg-white xl p-6 mb-0.5 relative flex items-end justify-end"
+            style={{ minHeight: "100px" }}
+          >
+            <div className="absolute bottom-4 left-1/2 -translate-x-1/2 text-xl font-bold text-black">
+              고객 상세 정보
+            </div>
+            <Button
+              onClick={() => navigate(-1)}
+              variant="ghost"
+              className="absolute bottom-3 left-1"
+            >
+              <img src={backIcon} alt="뒤로가기" className="w-2.5 h-5 mr-2" />
+            </Button>
+          </div>
+        </div>
+        <div className="w-full max-w-md overflow-y-auto hide-scrollbar p-4 text-center">
+          로딩 중...
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="h-screen bg-[#F2F3F7] flex flex-col items-center p-4">
       {/* Title Section (Fixed) */}

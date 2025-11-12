@@ -95,13 +95,44 @@ const CustomerInfo: React.FC = () => {
       {/* Contents Section (Scrollable) */}
       <div className="w-full max-w-md overflow-y-auto hide-scrollbar">
         {/* Section 1: 기본 정보 */}
-        <div className="bg-white xl p-6 mb-0.5"></div>
+        <div className="bg-white xl p-6 mb-0.5">
+          <h3 className="text-lg font-semibold mb-2">기본 정보</h3>
+          <p>
+            <strong>이름:</strong> {customerData.name}
+          </p>
+          <p>
+            <strong>전화번호:</strong> {customerData.phone_number}
+          </p>
+          <p>
+            <strong>사용 금액:</strong>{" "}
+            {customerData.total_spent.toLocaleString()}원
+          </p>
+          <p>
+            <strong>이탈 위험도:</strong> {customerData.churn_risk_level}
+          </p>
+        </div>
         {/* Section 2: 포인트 관련 정보 */}
-        <div className="bg-white xl p-6 mb-0.5"></div>
+        <div className="bg-white xl p-6 mb-0.5">
+          <h3 className="text-lg font-semibold mb-2">포인트 정보</h3>
+          <p>
+            <strong>현재 포인트:</strong>{" "}
+            {customerData.current_points.toLocaleString()}점
+          </p>
+        </div>
         {/* Section 3: 방문 횟수 정보 */}
-        <div className="bg-white xl p-6 mb-0.5"></div>
+        <div className="bg-white xl p-6 mb-0.5">
+          <h3 className="text-lg font-semibold mb-2">방문 정보</h3>
+          <p>
+            <strong>총 방문 횟수:</strong>{" "}
+            {customerData.visit.total_visit_count}회
+          </p>
+          <p>
+            <strong>마지막 방문일:</strong>{" "}
+            {calculateLastVisitDate(customerData.visit.visit_day_ago)}
+          </p>
+        </div>
         {/* Section 4: 방문 빈도 그래프 */}
-        <div className="bg-white xl p-6 mb-0.5"></div>
+        <div className="bg-white xl p-6 mb-0.5 flex space-x-4"></div>
       </div>
     </div>
   );

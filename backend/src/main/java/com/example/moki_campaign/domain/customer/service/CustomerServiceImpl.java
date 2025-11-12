@@ -13,11 +13,11 @@ import com.example.moki_campaign.infra.ai.client.AiClient;
 import com.example.moki_campaign.infra.ai.dto.AiCustomerDataInputDto;
 import com.example.moki_campaign.infra.ai.dto.AiCustomerDataOutputDto;
 import com.example.moki_campaign.infra.ai.dto.AiCustomerDataResponseDto;
-import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.context.annotation.Lazy;
 
 import java.time.LocalDate;
 import java.time.YearMonth;
@@ -27,7 +27,6 @@ import java.util.Map;
 import java.util.stream.Collectors;
 
 @Service
-@RequiredArgsConstructor
 @Slf4j
 public class CustomerServiceImpl implements CustomerService {
 
@@ -36,6 +35,20 @@ public class CustomerServiceImpl implements CustomerService {
     private final DailyVisitRepository dailyVisitRepository;
     private final AiClient aiClient;
 
+    private final CustomerService self;
+
+    public CustomerServiceImpl(
+            StoreRepository storeRepository,
+            CustomerRepository customerRepository,
+            DailyVisitRepository dailyVisitRepository,
+            AiClient aiClient,
+            @Lazy CustomerService self) {
+        this.storeRepository = storeRepository;
+        this.customerRepository = customerRepository;
+        this.dailyVisitRepository = dailyVisitRepository;
+        this.aiClient = aiClient;
+        this.self = self;
+    }
     // 전체 매장의 고객들에 대한 ai 고객 분석
     // 테스트 위해 @Async 추가(테스트 완료하면 테스트 로직 삭제 예정)
     @Async
@@ -56,7 +69,7 @@ public class CustomerServiceImpl implements CustomerService {
 
         for (Store store : stores) {
             try {
-                analyzeStore(store);
+                self.analyzeStore(store);
                 successCount++;
             } catch (Exception e) {
                 log.error("매장({}) AI 분석 실패", store.getName(), e);
@@ -68,6 +81,7 @@ public class CustomerServiceImpl implements CustomerService {
     }
 
     // 특정 매장의 고객을 대상으로 ai 분석
+    // 항상 새로운 트렌젝션을 시작
     @Override
     @Transactional
     public void analyzeStore(Store store) {

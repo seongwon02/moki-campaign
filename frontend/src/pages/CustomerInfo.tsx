@@ -22,7 +22,7 @@ const CustomerInfo: React.FC = () => {
         analytics: {
           visit_frequency: [
             {
-              month: "2025-09",
+              month: "2025-11",
               count: 5,
             },
           ],
@@ -65,12 +65,25 @@ const CustomerInfo: React.FC = () => {
             </Button>
           </div>
         </div>
-        <div className="w-full max-w-md overflow-y-auto hide-scrollbar p-4 text-center">
+        <div className="w-full max_w-md overflow-y-auto hide-scrollbar p-4 text-center">
           로딩 중...
         </div>
       </div>
     );
   }
+
+  const getChurnRiskLevelInKorean = (level: string) => {
+    switch (level) {
+      case "LOW":
+        return "낮음";
+      case "MEDIUM":
+        return "보통";
+      case "HIGH":
+        return "높음";
+      default:
+        return level;
+    }
+  };
 
   return (
     <div className="h-screen bg-[#F2F3F7] flex flex-col items-center p-4">
@@ -97,42 +110,59 @@ const CustomerInfo: React.FC = () => {
         {/* Section 1: 기본 정보 */}
         <div className="bg-white xl p-6 mb-0.5">
           <h3 className="text-lg font-semibold mb-2">기본 정보</h3>
-          <p>
-            <strong>이름:</strong> {customerData.name}
-          </p>
-          <p>
-            <strong>전화번호:</strong> {customerData.phone_number}
-          </p>
-          <p>
-            <strong>사용 금액:</strong>{" "}
-            {customerData.total_spent.toLocaleString()}원
-          </p>
-          <p>
-            <strong>이탈 위험도:</strong> {customerData.churn_risk_level}
-          </p>
+          <div className="flex justify-between mb-2 text-xl">
+            <span className="font-semibold">이름:</span>
+            <span className="font-bold">{customerData.name}</span>
+          </div>
+          <div className="flex justify-between mb-2 text-xl">
+            <span className="font-semibold">전화번호:</span>
+            <span className="font-bold">{customerData.phone_number}</span>
+          </div>
+          <div className="flex justify-between mb-2 text-xl">
+            <span className="font-semibold">사용 금액:</span>
+            <span className="font-bold">
+              {customerData.total_spent.toLocaleString()}원
+            </span>
+          </div>
+          <div className="flex justify-between mb-2 text-xl">
+            <span className="font-semibold">단골 점수:</span>
+            <span className="font-bold">{customerData.loyalty_score}점</span>
+          </div>
+          <div className="flex justify-between mb-2 text-xl">
+            <span className="font-semibold">이탈 위험도:</span>
+            <span className="font-bold">
+              {getChurnRiskLevelInKorean(customerData.churn_risk_level)}
+            </span>
+          </div>
         </div>
         {/* Section 2: 포인트 관련 정보 */}
         <div className="bg-white xl p-6 mb-0.5">
           <h3 className="text-lg font-semibold mb-2">포인트 정보</h3>
-          <p>
-            <strong>현재 포인트:</strong>{" "}
-            {customerData.current_points.toLocaleString()}점
-          </p>
+          <div className="flex justify-between mb-2 text-xl">
+            <span className="font-semibold">현재 포인트:</span>
+            <span className="font-bold">
+              {customerData.current_points.toLocaleString()} P
+            </span>
+          </div>
         </div>
         {/* Section 3: 방문 횟수 정보 */}
         <div className="bg-white xl p-6 mb-0.5">
           <h3 className="text-lg font-semibold mb-2">방문 정보</h3>
-          <p>
-            <strong>총 방문 횟수:</strong>{" "}
-            {customerData.visit.total_visit_count}회
-          </p>
-          <p>
-            <strong>마지막 방문일:</strong>{" "}
-            {calculateLastVisitDate(customerData.visit.visit_day_ago)}
-          </p>
+          <div className="flex justify-between mb-2 text-xl">
+            <span className="font-semibold">총 방문 횟수:</span>
+            <span className="font-bold">
+              {customerData.visit.total_visit_count}회
+            </span>
+          </div>
+          <div className="flex justify-between mb-2 text-xl">
+            <span className="font-semibold">마지막 방문일:</span>
+            <span className="font-bold">
+              {calculateLastVisitDate(customerData.visit.visit_day_ago)}
+            </span>
+          </div>
         </div>
         {/* Section 4: 방문 빈도 그래프 */}
-        <div className="bg-white xl p-6 mb-0.5 flex space-x-4"></div>
+        <div className="bg-white xl p-6 mb-0.5"></div>
       </div>
     </div>
   );

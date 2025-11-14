@@ -4,6 +4,25 @@ import Button from "../components/common/Button";
 import backIcon from "../assets/icons/back.svg";
 import type { CustomerDetail } from "../types/customerTypes";
 import { calculateLastVisitDate } from "../utils/dateUtils";
+import {
+  Chart as ChartJS,
+  CategoryScale,
+  LinearScale,
+  BarElement,
+  Title,
+  Tooltip,
+  Legend,
+} from "chart.js";
+import { Bar } from "react-chartjs-2";
+
+ChartJS.register(
+  CategoryScale,
+  LinearScale,
+  BarElement,
+  Title,
+  Tooltip,
+  Legend
+);
 
 const CustomerInfo: React.FC = () => {
   const navigate = useNavigate();
@@ -21,10 +40,12 @@ const CustomerInfo: React.FC = () => {
         },
         analytics: {
           visit_frequency: [
-            {
-              month: "2025-11",
-              count: 5,
-            },
+            { month: "2025-06", count: 3 },
+            { month: "2025-07", count: 4 },
+            { month: "2025-08", count: 2 },
+            { month: "2025-09", count: 5 },
+            { month: "2025-10", count: 7 },
+            { month: "2025-11", count: 5 },
           ],
         },
         customer_id: 1,
@@ -44,6 +65,41 @@ const CustomerInfo: React.FC = () => {
       fetchCustomerDetails();
     }
   }, [customerId]);
+
+  const chartOptions = {
+    responsive: true,
+    plugins: {
+      legend: {
+        display: false,
+      },
+    },
+    scales: {
+      y: {
+        beginAtZero: true,
+        ticks: {
+          stepSize: 1,
+        },
+      },
+    },
+  };
+
+  const chartData = {
+    labels:
+      customerData?.analytics.visit_frequency.map(
+        (item) => `${parseInt(item.month.split("-")[1])}월`
+      ) || [],
+    datasets: [
+      {
+        label: "월별 방문 횟수",
+        data:
+          customerData?.analytics.visit_frequency.map((item) => item.count) ||
+          [],
+        backgroundColor: "rgba(74, 124, 233, 0.6)",
+        borderColor: "rgba(74, 124, 233, 1)",
+        borderWidth: 1,
+      },
+    ],
+  };
 
   if (!customerData) {
     return (
@@ -162,7 +218,10 @@ const CustomerInfo: React.FC = () => {
           </div>
         </div>
         {/* Section 4: 방문 빈도 그래프 */}
-        <div className="bg-white xl p-6 mb-0.5"></div>
+        <div className="bg-white xl p-6 mb-0.5">
+          <h3 className="text-lg font-semibold mb-4">최근 6개월 방문 빈도</h3>
+          <Bar options={chartOptions} data={chartData} />
+        </div>
       </div>
     </div>
   );

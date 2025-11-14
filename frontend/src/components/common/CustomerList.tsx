@@ -2,6 +2,7 @@ import React from "react";
 import type { Customer } from "../../types/customerTypes";
 import { calculateLastVisitDate } from "../../utils/dateUtils";
 import Button from "./Button";
+import { useNavigate } from "react-router-dom";
 
 interface CustomerListProps {
   customers: Customer[];
@@ -21,6 +22,11 @@ const CustomerList: React.FC<CustomerListProps> = ({
     : customers;
   const showShowMoreButton =
     visibleCount && onShowMore && visibleCount < customers.length;
+  const navigate = useNavigate();
+
+  const handleCustomerClick = (customerId: number) => {
+    navigate(`/customer-info/${customerId}`);
+  };
 
   return (
     <div className="overflow-x-auto">
@@ -43,7 +49,11 @@ const CustomerList: React.FC<CustomerListProps> = ({
         </thead>
         <tbody>
           {customersToShow.map((customer) => (
-            <tr key={customer.customer_id}>
+            <tr
+              key={customer.customer_id}
+              onClick={() => handleCustomerClick(customer.customer_id)}
+              className="cursor-pointer hover:bg-gray-50"
+            >
               <td className="py-2 px-4 border-b text-sm text-gray-800">
                 {customer.name}
               </td>

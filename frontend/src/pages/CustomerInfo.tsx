@@ -51,8 +51,8 @@ const CustomerInfo: React.FC = () => {
         customer_id: 1,
         phone_number: "010-1234-5678",
         total_spent: 500000,
-        loyalty_score: 85,
-        churn_risk_level: "LOW",
+        loyalty_score: 90,
+        churn_risk_level: "HIGH",
         current_points: 1500,
       };
       // In a real application, we would fetch data from an API:
@@ -168,7 +168,19 @@ const CustomerInfo: React.FC = () => {
           <h3 className="text-lg font-semibold mb-2">기본 정보</h3>
           <div className="flex justify-between mb-2 text-xl">
             <span className="font-semibold">이름:</span>
-            <span className="font-bold">{customerData.name}</span>
+            <span className="font-bold flex items-center">
+              {customerData.loyalty_score >= 70 && (
+                <span className="mr-2 px-2 py-1 rounded-full text-sm bg-[#4A7CE9] text-white">
+                  단골
+                </span>
+              )}
+              {customerData.churn_risk_level === "LOW" && (
+                <span className="mr-2 px-2 py-1 rounded-full text-sm bg-red-500 text-white">
+                  이탈 위험
+                </span>
+              )}
+              {customerData.name}
+            </span>
           </div>
           <div className="flex justify-between mb-2 text-xl">
             <span className="font-semibold">전화번호:</span>

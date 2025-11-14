@@ -24,6 +24,7 @@ public enum ErrorCode {
     STORE_NOT_FOUND(HttpStatus.NOT_FOUND, "STORE_NOT_FOUND", "매장 데이터를 찾을 수 없습니다."),
 
     // Customer
+    CUSTOMER_NOT_FOUND(HttpStatus.NOT_FOUND, "CUSTOMER_NOT_FOUND", "고객 데이터를 찾을 수 없습니다."),
 
     // Visit
 

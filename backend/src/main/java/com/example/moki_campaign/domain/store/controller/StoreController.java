@@ -29,12 +29,12 @@ public class StoreController {
     )
     @ApiResponse(responseCode = "200", description = "조회 성공")
     @Parameters({
-            @Parameter(description = "매장 ID", required = true, example = "1")
+            @Parameter(name = "storeId", description = "매장 ID", required = true, example = "1")
     })
     @GetMapping("/{storeId}/main/weekly")
     public ResponseEntity<WeeklySummaryResponseDto> getWeeklySummary(
             @PathVariable Long storeId,
-            @CurrentStore Store currentStore
+            @Parameter(hidden = true) @CurrentStore Store currentStore
     ) {
         // JWT에서 추출한 currentStore를 사용하여 주간 요약 조회
         WeeklySummaryResponseDto response = storeService.findWeeklySummary(currentStore);

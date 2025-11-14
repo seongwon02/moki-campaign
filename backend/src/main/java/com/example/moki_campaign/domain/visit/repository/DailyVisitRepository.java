@@ -45,4 +45,12 @@ public interface DailyVisitRepository extends JpaRepository<DailyVisit, Long> {
     Set<Long> getVisitorIdsByDateRange(@Param("store") Store store,
                                        @Param("startDate") LocalDate startDate,
                                        @Param("endDate") LocalDate endDate);
+
+    // 특정 고객의 지정된 기간 동안의 방문 기록 조회
+    @Query("SELECT dv FROM DailyVisit dv " +
+            "WHERE dv.customer.id = :customerId AND dv.visitDate BETWEEN :startDate AND :endDate " +
+            "ORDER BY dv.visitDate ASC")
+    List<DailyVisit> findByCustomerIdAndDateRange(@Param("customerId") Long customerId,
+                                                   @Param("startDate") LocalDate startDate,
+                                                   @Param("endDate") LocalDate endDate);
 }

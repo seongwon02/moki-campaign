@@ -28,12 +28,8 @@ public class StoreController {
             description = "이번주 매출, 방문 고객 수, 재방문율 등의 요약 정보를 가져옵니다."
     )
     @ApiResponse(responseCode = "200", description = "조회 성공")
-    @Parameters({
-            @Parameter(name = "storeId", description = "매장 ID", required = true, example = "1")
-    })
-    @GetMapping("/{storeId}/main/weekly")
+    @GetMapping("/main/weekly")
     public ResponseEntity<WeeklySummaryResponseDto> getWeeklySummary(
-            @PathVariable Long storeId,
             @Parameter(hidden = true) @CurrentStore Store currentStore
     ) {
         // JWT에서 추출한 currentStore를 사용하여 주간 요약 조회

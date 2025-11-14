@@ -21,7 +21,7 @@ import org.springframework.web.bind.annotation.*;
 @Tag(name = "고객 CRM", description = "고객 관리 API (전체/충성/이탈 고객)")
 @RestController
 @RequiredArgsConstructor
-@RequestMapping("/api/stores/{storeId}/customers")
+@RequestMapping("/api/stores/customers")
 @SecurityRequirement(name = "bearerAuth")
 public class CustomerController {
 
@@ -41,14 +41,12 @@ public class CustomerController {
     )
     @ApiResponse(responseCode = "200", description = "조회 성공")
     @Parameters({
-            @Parameter(name = "storeId", description = "매장 ID", required = true, example = "1"),
             @Parameter(name = "segment", description = "조회할 고객 타입 [all, loyal, churn_risk, at_risk_loyal]", required = true, example = "all"),
             @Parameter(name = "size", description = "페이지 당 사이즈 (메인은 5, CRM은 20)", example = "20"),
             @Parameter(name = "page", description = "페이지 번호 (0부터 시작)", example = "0")
     })
     @GetMapping
     public ResponseEntity<CustomerListResponseDto> getCustomers(
-            @PathVariable Long storeId,
             @RequestParam String segment,
             @RequestParam(defaultValue = "20") Integer size,
             @RequestParam(defaultValue = "0") Integer page,
@@ -67,11 +65,9 @@ public class CustomerController {
     @ApiResponse(responseCode = "200", description = "조회 성공")
     @GetMapping("/{customerId}")
     @Parameters({
-            @Parameter(name = "storeId" ,description = "매장 ID", required = true, example = "1"),
             @Parameter(name = "customerId", description = "고객 ID", required = true, example = "1")
     })
     public ResponseEntity<CustomerDetailResponseDto> getCustomerDetail(
-            @PathVariable Long storeId,
             @PathVariable Long customerId,
             @Parameter(hidden = true) @CurrentStore Store store
     ) {
@@ -90,12 +86,8 @@ public class CustomerController {
                     """
     )
     @ApiResponse(responseCode = "200", description = "조회 성공")
-    @Parameters({
-            @Parameter(name = "storeId", description = "매장 ID", required = true, example = "1")
-    })
     @GetMapping("/decline")
     public ResponseEntity<DeclinedLoyalSummaryResponseDto> getDecliningCustomers(
-            @PathVariable Long storeId,
             @Parameter(hidden = true) @CurrentStore Store store
     ) {
         DeclinedLoyalSummaryResponseDto response = customerService.findDeclinedLoyalInfo(store);

@@ -38,11 +38,11 @@ public record WeeklySummaryResponseDto(
 
         @Schema(description = "재방문율", example = "0.64")
         @JsonProperty("revisit_rate")
-        Double revisitRate,
+        Integer revisitRate,
 
         @Schema(description = "재방문율 변화량", example = "0.03")
         @JsonProperty("revisit_rate_change")
-        Double revisitRateChange
+        Integer revisitRateChange
 ) {
 
 

@@ -57,9 +57,9 @@ public class StoreServiceImpl implements StoreService {
                 .filter(lastWeekFullVisitors::contains)
                 .collect(Collectors.toSet());
 
-        double thisWeekRevisitRate = 0.0;
+        int thisWeekRevisitRate = 0;
         if (!lastWeekFullVisitors.isEmpty()) {
-            thisWeekRevisitRate = (double) thisWeekRevisitors.size() / lastWeekFullVisitors.size();
+            thisWeekRevisitRate = (int) Math.round((double) thisWeekRevisitors.size() / lastWeekFullVisitors.size() * 100.0);
         }
 
         // 재방문율 변화량
@@ -73,12 +73,12 @@ public class StoreServiceImpl implements StoreService {
                 .filter(prevPrevWeekFullVisitors::contains)
                 .collect(Collectors.toSet());
 
-        double lastWeekRevisitRate = 0.0;
+        int lastWeekRevisitRate = 0;
         if (!prevPrevWeekFullVisitors.isEmpty()) {
-            lastWeekRevisitRate = (double) lastWeekRevisitors.size() / prevPrevWeekFullVisitors.size();
+            lastWeekRevisitRate = (int) Math.round((double) lastWeekRevisitors.size() / prevPrevWeekFullVisitors.size() * 100.0);
         }
 
-        double revisitRateChange = thisWeekRevisitRate - lastWeekRevisitRate;
+        int revisitRateChange = thisWeekRevisitRate - lastWeekRevisitRate;
 
         return new WeeklySummaryResponseDto(
                 store.getName(),

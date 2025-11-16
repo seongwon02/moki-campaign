@@ -8,6 +8,7 @@ import revisitIcon from "../assets/icons/revisit.svg";
 import settingIcon from "../assets/icons/setting.svg";
 import type { Customer } from "../types/customerTypes.ts";
 import CustomerList from "../components/common/CustomerList.tsx";
+import { getCustomers } from "../services/crmApi.ts";
 import { getWeeklySummary } from "../services/weeklySummaryApi.ts";
 import { getDeclineCustomers } from "../services/atRiskLoyalApi.ts";
 
@@ -41,6 +42,9 @@ const MainDashboard: React.FC = () => {
     null
   );
   const [atRiskData, setAtRiskData] = useState<AtRiskLoyalData | null>(null);
+  const [atRiskLoyalCustomers, setAtRiskLoyalCustomers] = useState<Customer[]>(
+    []
+  );
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -52,13 +56,15 @@ const MainDashboard: React.FC = () => {
           throw new Error("인증 토큰이 없습니다. 다시 로그인해주세요.");
         }
 
-        const [summary, atRisk] = await Promise.all([
+        const [summary, atRisk, atRiskLoyalResponse] = await Promise.all([
           getWeeklySummary(),
           getDeclineCustomers(),
+          getCustomers({ segment: "at_risk_loyal", size: 5, page: 0 }),
         ]);
 
         setSummaryData(summary);
         setAtRiskData(atRisk);
+        setAtRiskLoyalCustomers(atRiskLoyalResponse.customers);
       } catch (err) {
         if (err instanceof Error) {
           setError(err.message);
@@ -428,7 +434,7 @@ const MainDashboard: React.FC = () => {
               </>
             )
           )}
-          <CustomerList customers={loyalCustomers.slice(0, 5)} />
+          <CustomerList customers={atRiskLoyalCustomers} />
           {/* View Details Button for Section 2 */}
           <Button
             variant="primary"

@@ -73,7 +73,7 @@ class StoreServiceTest {
         assertThat(result.customerCountChange()).isEqualTo(20); // 120 - 100
 
         // 재방문율 검증
-        assertThat(result.revisitRate()).isEqualTo(0.5);
-        assertThat(result.revisitRateChange()).isCloseTo(-0.1666, within(0.0001));
+        assertThat(result.revisitRate()).isEqualTo(50);
+        assertThat(result.revisitRateChange()).isCloseTo(-16, within(1));
     }
 }

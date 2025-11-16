@@ -9,6 +9,7 @@ import settingIcon from "../assets/icons/setting.svg";
 import type { Customer } from "../types/customerTypes.ts";
 import CustomerList from "../components/common/CustomerList.tsx";
 import { getWeeklySummary } from "../services/weeklySummaryApi.ts";
+import { getDeclineCustomers } from "../services/atRiskLoyalApi.ts";
 
 // API 응답 데이터 타입 정의
 interface WeeklySummaryData {
@@ -23,6 +24,11 @@ interface WeeklySummaryData {
   revisit_rate_change: number;
 }
 
+interface AtRiskLoyalData {
+  decline_count: number;
+  decline_ratio: number;
+}
+
 const MainDashboard: React.FC = () => {
   const navigate = useNavigate();
   const [showSettings, setShowSettings] = useState(false);
@@ -34,19 +40,25 @@ const MainDashboard: React.FC = () => {
   const [summaryData, setSummaryData] = useState<WeeklySummaryData | null>(
     null
   );
+  const [atRiskData, setAtRiskData] = useState<AtRiskLoyalData | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    const fetchSummaryData = async () => {
+    const fetchData = async () => {
       try {
         const token = localStorage.getItem("authToken");
         if (!token) {
           throw new Error("인증 토큰이 없습니다. 다시 로그인해주세요.");
         }
 
-        const data = await getWeeklySummary();
-        setSummaryData(data);
+        const [summary, atRisk] = await Promise.all([
+          getWeeklySummary(),
+          getDeclineCustomers(),
+        ]);
+
+        setSummaryData(summary);
+        setAtRiskData(atRisk);
       } catch (err) {
         if (err instanceof Error) {
           setError(err.message);
@@ -58,7 +70,7 @@ const MainDashboard: React.FC = () => {
       }
     };
 
-    fetchSummaryData();
+    fetchData();
   }, []);
 
   // YYYY-MM-DD 형식의 날짜를 MM.DD로 변환하는 함수
@@ -390,14 +402,32 @@ const MainDashboard: React.FC = () => {
           <h2 className="text-lg font-bold text-black mb-4">
             방문 감소 충성 고객
           </h2>
-          <p className="text-xs text-gray-700 mb-2">
-            단골 고객 중 <span className="text-[#4A7CE9]">17명</span>의 방문
-            횟수가 감소하고 있습니다
-          </p>
-          <p className="text-xs text-gray-700 mb-4">
-            현재 단골 고객 중 이탈 위험 고객의 비율은{" "}
-            <span className="text-[#4A7CE9]">24%</span>입니다
-          </p>
+          {isLoading ? (
+            <p className="text-xs text-gray-700 mb-4">데이터를 불러오는 중...</p>
+          ) : error ? (
+            <p className="text-xs text-red-500 mb-4">
+              데이터 로딩 중 오류가 발생했습니다.
+            </p>
+          ) : (
+            atRiskData && (
+              <>
+                <p className="text-xs text-gray-700 mb-2">
+                  단골 고객 중{" "}
+                  <span className="text-[#4A7CE9]">
+                    {atRiskData.decline_count}명
+                  </span>
+                  의 방문 횟수가 감소하고 있습니다
+                </p>
+                <p className="text-xs text-gray-700 mb-4">
+                  현재 단골 고객 중 이탈 위험 고객의 비율은{" "}
+                  <span className="text-[#4A7CE9]">
+                    {atRiskData.decline_ratio}%
+                  </span>
+                  입니다
+                </p>
+              </>
+            )
+          )}
           <CustomerList customers={loyalCustomers.slice(0, 5)} />
           {/* View Details Button for Section 2 */}
           <Button

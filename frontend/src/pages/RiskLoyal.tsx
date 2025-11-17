@@ -1,28 +1,92 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import Button from "../components/common/Button";
 import backIcon from "../assets/icons/back.svg";
 import type { Customer } from "../types/customerTypes";
 import CustomerList from "../components/common/CustomerList";
+import { getDeclineCustomers } from "../services/atRiskLoyalApi";
+import { getCustomers } from "../services/crmApi";
+
+// NOTE: The structure of the response from getDeclineCustomers is assumed here.
+interface DeclineStats {
+  decline_customer_count: number;
+  decline_customer_rate: number;
+}
 
 const RiskLoyal: React.FC = () => {
   const navigate = useNavigate();
-  const [visibleCount, setVisibleCount] = useState(25);
+  const [customers, setCustomers] = useState<Customer[]>([]);
+  const [stats, setStats] = useState<DeclineStats | null>(null);
+  const [page, setPage] = useState(0);
+  const [hasNext, setHasNext] = useState(false);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
-  const AtRiskLoyalCustomers: Customer[] = Array.from(
-    { length: 50 },
-    (_, i) => ({
-      name: `고객 ${i + 1}`,
-      customer_id: i + 1,
-      visit_day_ago: Math.floor(Math.random() * 60) + 1, // 1 to 60 days ago
-      total_visit_count: Math.floor(Math.random() * 20) + 1, // 1 to 20 visits
-      loyalty_score: Math.floor(Math.random() * 50) + 50, // 50 to 100 loyalty score
-    })
-  );
+  useEffect(() => {
+    const fetchInitialData = async () => {
+      setLoading(true);
+      setError(null);
+      try {
+        const declineData = await getDeclineCustomers();
+        setStats(declineData);
 
-  const handleShowMore = () => {
-    setVisibleCount((prevCount) => prevCount + 25);
+        const customerData = await getCustomers({
+          segment: "at_risk_loyal",
+          page: 0,
+          size: 25,
+        });
+        setCustomers(customerData.customers);
+        setHasNext(customerData.has_next);
+        setPage(0);
+      } catch (err) {
+        const errorMessage =
+          err instanceof Error ? err.message : "An unknown error occurred.";
+        setError(errorMessage);
+        console.error("Failed to fetch initial data:", err);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchInitialData();
+  }, []);
+
+  const handleShowMore = async () => {
+    if (!hasNext) return;
+
+    const nextPage = page + 1;
+    try {
+      const data = await getCustomers({
+        segment: "at_risk_loyal",
+        page: nextPage,
+        size: 25,
+      });
+      setCustomers((prev) => [...prev, ...data.customers]);
+      setHasNext(data.has_next);
+      setPage(nextPage);
+    } catch (err) {
+      const errorMessage =
+        err instanceof Error ? err.message : "An unknown error occurred.";
+      setError(errorMessage);
+      console.error("Failed to fetch more customers:", err);
+    }
   };
+
+  if (loading) {
+    return (
+      <div className="flex justify-center items-center h-screen">
+        Loading...
+      </div>
+    );
+  }
+
+  if (error && customers.length === 0) {
+    return (
+      <div className="flex justify-center items-center h-screen">
+        Error: {error}
+      </div>
+    );
+  }
 
   return (
     <div className="h-screen bg-[#F2F3F7] flex flex-col items-center p-4">
@@ -53,25 +117,41 @@ const RiskLoyal: React.FC = () => {
             <p className="text-black font-bold text-base">
               충성 고객 중 방문 감소
             </p>
-            <p className="text-[#4A7CE9] font-bold text-3xl">17명</p>
+            <p className="text-[#4A7CE9] font-bold text-3xl">
+              {stats?.decline_customer_count ?? 0}명
+            </p>
           </div>
           <div className="w-1/2">
             {/* Right Section */}
             <p className="text-black font-bold text-base">
               이탈 위험 충성 고객 비율
             </p>
-            <p className="text-[#4A7CE9] font-bold text-3xl">24%</p>
+            <p className="text-[#4A7CE9] font-bold text-3xl">
+              {stats?.decline_customer_rate ?? 0}%
+            </p>
           </div>
         </div>
         {/* Section 2: 이탈 위험 충성 고객 리스트 */}
         <div className="bg-white xl p-6 mb-0.5">
           <CustomerList
-            customers={AtRiskLoyalCustomers}
-            visibleCount={visibleCount}
-            onShowMore={handleShowMore}
+            customers={customers}
+            visibleCount={customers.length}
+            onShowMore={() => {}}
             baseDateString="2025-11-06T12:00:00Z"
           />
         </div>
+        {error && <p className="text-red-500 text-center p-2">{error}</p>}
+        {hasNext && (
+          <div className="bg-white p-4 mt-0.5">
+            <Button
+              onClick={handleShowMore}
+              className="w-full"
+              variant="secondary"
+            >
+              더보기
+            </Button>
+          </div>
+        )}
       </div>
     </div>
   );

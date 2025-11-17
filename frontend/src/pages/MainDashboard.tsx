@@ -115,8 +115,7 @@ const MainDashboard: React.FC = () => {
   };
 
   // 숫자 변화량을 포맷하는 헬퍼 함수
-  const formatChange = (change: number, unit: string, isPercentage = false) => {
-    const value = isPercentage ? change * 100 : change;
+  const formatChange = (value: number, unit: string) => {
     const isPositive = value > 0;
     const isNegative = value < 0;
     const symbol = isPositive ? "▲" : isNegative ? "▼" : "";
@@ -229,9 +228,9 @@ const MainDashboard: React.FC = () => {
                   </div>
                   <div className="text-right">
                     <span className="font-bold text-lg text-gray-800">
-                      {Math.round(summaryData.revisit_rate * 100)}%
+                      {summaryData.revisit_rate}%
                     </span>
-                    {formatChange(summaryData.revisit_rate_change, "%", true)}
+                    {formatChange(summaryData.revisit_rate_change, "%")}
                   </div>
                 </div>
               </div>
@@ -245,7 +244,9 @@ const MainDashboard: React.FC = () => {
             방문 감소 충성 고객
           </h2>
           {isLoading ? (
-            <p className="text-xs text-gray-700 mb-4">데이터를 불러오는 중...</p>
+            <p className="text-xs text-gray-700 mb-4">
+              데이터를 불러오는 중...
+            </p>
           ) : error ? (
             <p className="text-xs text-red-500 mb-4">
               데이터 로딩 중 오류가 발생했습니다.

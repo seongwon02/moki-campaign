@@ -145,11 +145,7 @@ const CRM: React.FC = () => {
         )}
         {hasNext && !loading && (
           <div className="bg-white p-4 mt-0.5">
-            <Button
-              onClick={handleShowMore}
-              className="w-full"
-              variant="secondary"
-            >
+            <Button onClick={handleShowMore} className="w-full" variant="plain">
               더보기
             </Button>
           </div>

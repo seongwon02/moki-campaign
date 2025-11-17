@@ -1,56 +1,84 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import Button from "../components/common/Button";
 import backIcon from "../assets/icons/back.svg";
 import type { Customer } from "../types/customerTypes";
 import CustomerList from "../components/common/CustomerList";
+import { getCustomers, type CustomerType } from "../services/crmApi";
 
 const CRM: React.FC = () => {
   const navigate = useNavigate();
-  const [visibleCount, setVisibleCount] = useState(25);
   const [activeList, setActiveList] = useState<"all" | "loyal" | "churn">(
     "all"
   );
+  const [customers, setCustomers] = useState<Customer[]>([]);
+  const [page, setPage] = useState(0);
+  const [hasNext, setHasNext] = useState(false);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
-  const allCustomers: Customer[] = Array.from({ length: 50 }, (_, i) => ({
-    name: `고객 ${i + 1}`,
-    customer_id: i + 1,
-    visit_day_ago: Math.floor(Math.random() * 200) + 1, // 1 to 200 days ago
-    total_visit_count: Math.floor(Math.random() * 100) + 1, // 1 to 100 visits
-    loyalty_score: Math.floor(Math.random() * 100), // 50 to 100 loyalty score
-  }));
+  useEffect(() => {
+    const fetchCustomers = async () => {
+      setLoading(true);
+      setError(null);
+      // Reset customers and page when the list type changes
+      setCustomers([]);
+      setPage(0);
 
-  const loyalCustomers: Customer[] = Array.from({ length: 50 }, (_, i) => ({
-    name: `고객 ${i + 1}`,
-    customer_id: i + 1,
-    visit_day_ago: Math.floor(Math.random() * 60) + 1, // 1 to 60 days ago
-    total_visit_count: Math.floor(Math.random() * 50) + 50, // 50 to 100 visits
-    loyalty_score: Math.floor(Math.random() * 30) + 70, // 70 to 100 loyalty score
-  }));
+      const segment: CustomerType =
+        activeList === "churn" ? "churn_risk" : activeList;
 
-  const churnRiskCustomers: Customer[] = Array.from({ length: 50 }, (_, i) => ({
-    name: `고객 ${i + 1}`,
-    customer_id: i + 1,
-    visit_day_ago: Math.floor(Math.random() * 140) + 60, // 60 to 200 days ago
-    total_visit_count: Math.floor(Math.random() * 20) + 1, // 1 to 20 visits
-    loyalty_score: Math.floor(Math.random() * 50), // 50 to 100 loyalty score
-  }));
+      try {
+        const data = await getCustomers({
+          segment,
+          page: 0,
+          size: 25,
+        });
+        setCustomers(data.customers);
+        setHasNext(data.has_next);
+      } catch (err) {
+        const errorMessage =
+          err instanceof Error ? err.message : "An unknown error occurred.";
+        setError(errorMessage);
+        console.error(`Failed to fetch ${activeList} customers:`, err);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchCustomers();
+  }, [activeList]);
+
+  const handleShowMore = async () => {
+    if (!hasNext) return;
+
+    const nextPage = page + 1;
+    const segment: CustomerType =
+      activeList === "churn" ? "churn_risk" : activeList;
+
+    try {
+      const data = await getCustomers({
+        segment,
+        page: nextPage,
+        size: 25,
+      });
+      setCustomers((prev) => [...prev, ...data.customers]);
+      setHasNext(data.has_next);
+      setPage(nextPage);
+    } catch (err) {
+      const errorMessage =
+        err instanceof Error ? err.message : "An unknown error occurred.";
+      setError(errorMessage);
+      console.error("Failed to fetch more customers:", err);
+    }
+  };
 
   const handleListChange = (list: "all" | "loyal" | "churn") => {
     setActiveList(list);
-    setVisibleCount(25);
   };
 
-  const handleShowMore = () => {
-    setVisibleCount((prevCount) => prevCount + 25);
-  };
-
-  const currentCustomers =
-    activeList === "all"
-      ? allCustomers
-      : activeList === "loyal"
-      ? loyalCustomers
-      : churnRiskCustomers;
+  const today = new Date();
+  const baseDateString = today.toISOString();
 
   return (
     <div className="h-screen bg-[#F2F3F7] flex flex-col items-center p-4">
@@ -99,13 +127,33 @@ const CRM: React.FC = () => {
             </Button>
           </div>
 
-          <CustomerList
-            customers={currentCustomers}
-            visibleCount={visibleCount}
-            onShowMore={handleShowMore}
-            baseDateString="2025-11-06T12:00:00Z"
-          />
+          {loading ? (
+            <div className="text-center p-4">Loading...</div>
+          ) : error && customers.length === 0 ? (
+            <div className="text-center p-4 text-red-500">Error: {error}</div>
+          ) : (
+            <CustomerList
+              customers={customers}
+              visibleCount={customers.length}
+              onShowMore={() => {}}
+              baseDateString={baseDateString}
+            />
+          )}
         </div>
+        {error && customers.length > 0 && (
+          <p className="text-red-500 text-center p-2">{error}</p>
+        )}
+        {hasNext && !loading && (
+          <div className="bg-white p-4 mt-0.5">
+            <Button
+              onClick={handleShowMore}
+              className="w-full"
+              variant="secondary"
+            >
+              더보기
+            </Button>
+          </div>
+        )}
       </div>
     </div>
   );

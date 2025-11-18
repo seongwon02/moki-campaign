@@ -51,7 +51,7 @@ const MainDashboard: React.FC = () => {
 
   const fetchCrmData = async (segment: "all" | "loyal" | "churn_risk") => {
     try {
-      const response = await getCustomers({ segment, size: 5, page: 0 });
+      const response = await getCustomers({ segment, size: 25, page: 0 });
       setCrmCustomers(response.customers);
     } catch (err) {
       if (err instanceof Error) {
@@ -271,7 +271,7 @@ const MainDashboard: React.FC = () => {
               </>
             )
           )}
-          <CustomerList customers={atRiskLoyalCustomers} />
+          <CustomerList customers={atRiskLoyalCustomers.slice(0, 5)} />
           {/* View Details Button for Section 2 */}
           <Button
             variant="primary"
@@ -309,7 +309,7 @@ const MainDashboard: React.FC = () => {
             </Button>
           </div>
 
-          <CustomerList customers={crmCustomers} />
+          <CustomerList customers={crmCustomers.slice(0, 5)} />
           {/* View Details Button for Section 3 */}
           <Button
             variant="primary"

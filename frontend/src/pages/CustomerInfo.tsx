@@ -3,7 +3,7 @@ import { useNavigate, useParams } from "react-router-dom";
 import Button from "../components/common/Button";
 import backIcon from "../assets/icons/back.svg";
 import type { CustomerDetail } from "../types/customerTypes";
-import { calculateLastVisitDate } from "../utils/dateUtils";
+import { calculateLastVisitDate, formatPhoneNumber } from "../utils/dateUtils";
 import { getCustomerDetail } from "../services/crmApi"; // New import
 import {
   Chart as ChartJS,
@@ -178,7 +178,7 @@ const CustomerInfo: React.FC = () => {
           </div>
           <div className="flex justify-between mb-2 text-xl">
             <span className="font-semibold">전화번호:</span>
-            <span className="font-bold">{customerData.phone_number}</span>
+            <span className="font-bold">{formatPhoneNumber(customerData.phone_number)}</span>
           </div>
           <div className="flex justify-between mb-2 text-xl">
             <span className="font-semibold">사용 금액:</span>

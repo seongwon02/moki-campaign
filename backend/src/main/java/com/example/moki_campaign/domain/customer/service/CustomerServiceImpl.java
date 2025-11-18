@@ -22,7 +22,9 @@ import com.example.moki_campaign.infra.ai.dto.AiCustomerDataOutputDto;
 import com.example.moki_campaign.infra.ai.dto.AiCustomerDataResponseDto;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -97,26 +99,31 @@ public class CustomerServiceImpl implements CustomerService {
         switch (segment.toLowerCase()) {
             case "all":
                 // 전체 고객 조회(최근 방문일 순으로 정렬)
-                customerPage = customerRepository.findByStoreOrderByLastVisitDateDesc(store, pageable);
+                pageable = sortForAll(pageable.getPageNumber(), pageable.getPageSize());
+                customerPage = customerRepository.findByStore(store, pageable);
                 break;
 
             case "loyal":
-                // LOYAL + AT_RISK_LOYAL 고객 조회(충성도 점수 순)
+                // LOYAL + AT_RISK_LOYAL 고객 조회
+                pageable = sortForOthers(pageable.getPageNumber(), pageable.getPageSize());
                 List<CustomerSegment> loyalSegments = List.of(CustomerSegment.LOYAL, CustomerSegment.AT_RISK_LOYAL);
-                customerPage = customerRepository.findByStoreAndSegmentInOrderByLoyaltyScoreDesc(
+                customerPage = customerRepository.findByStoreAndSegmentIn(
                         store, loyalSegments, pageable);
                 break;
 
             case "at_risk_loyal":
-                // AT_RISK_LOYAL 고객 조회(충성도 점수 순)
-                customerPage = customerRepository.findByStoreAndSegmentOrderByLoyaltyScoreDesc(
+                // AT_RISK_LOYAL 고객 조회
+                pageable = sortForOthers(pageable.getPageNumber(), pageable.getPageSize());
+                customerPage = customerRepository.findByStoreAndSegment(
                         store, CustomerSegment.AT_RISK_LOYAL, pageable);
                 break;
 
             case "churn_risk":
-                // CHURN_RISK 고객 조회(충성도 점수 순)
-                customerPage = customerRepository.findByStoreAndSegmentOrderByLoyaltyScoreDesc(
-                        store, CustomerSegment.CHURN_RISK, pageable);
+                // CHURN_RISK + AT_RISK_LOYAL 고객 조회
+                pageable = sortForOthers(pageable.getPageNumber(), pageable.getPageSize());
+                List<CustomerSegment> riskSegments = List.of(CustomerSegment.CHURN_RISK, CustomerSegment.AT_RISK_LOYAL);
+                customerPage = customerRepository.findByStoreAndSegmentIn(
+                        store, riskSegments, pageable);
                 break;
 
             default:
@@ -426,5 +433,21 @@ public class CustomerServiceImpl implements CustomerService {
             log.error("Invalid customer_id format: {}", customerId);
             return -1L;
         }
+    }
+
+    private Pageable sortForAll(int page, int size) {
+        return PageRequest.of(page, size, Sort.by(
+                Sort.Order.desc("lastVisitDate"),
+                Sort.Order.desc("loyaltyScore"),
+                Sort.Order.desc("id")
+        ));
+    }
+
+    private Pageable sortForOthers(int page, int size) {
+        return PageRequest.of(page, size, Sort.by(
+                Sort.Order.desc("loyaltyScore"),
+                Sort.Order.desc("lastVisitDate"),
+                Sort.Order.desc("id")
+        ));
     }
 }

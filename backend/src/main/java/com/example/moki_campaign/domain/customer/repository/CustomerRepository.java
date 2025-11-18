@@ -21,11 +21,11 @@ public interface CustomerRepository extends JpaRepository<Customer, Long> {
 
     Optional<Customer> findByStoreAndId(Store store, Long customerId);
 
-    Page<Customer> findByStoreOrderByLastVisitDateDesc(Store store, Pageable pageable);
+    Page<Customer> findByStore(Store store, Pageable pageable);
 
-    Page<Customer> findByStoreAndSegmentOrderByLoyaltyScoreDesc(Store store, CustomerSegment segment, Pageable pageable);
+    Page<Customer> findByStoreAndSegment(Store store, CustomerSegment segment, Pageable pageable);
 
-    Page<Customer> findByStoreAndSegmentInOrderByLoyaltyScoreDesc(Store store, List<CustomerSegment> segments, Pageable pageable);
+    Page<Customer> findByStoreAndSegmentIn(Store store, List<CustomerSegment> segments, Pageable pageable);
 
     long countByStoreAndSegment(Store store, CustomerSegment segment);
 

@@ -27,10 +27,7 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageImpl;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.*;
 
 import java.lang.reflect.Field;
 import java.time.LocalDate;
@@ -280,7 +277,11 @@ public class CustomerServiceImplTest {
         void 전체_고객_조회_최근_방문일_순() {
             // Given
             Store store = createStore(1L, "테스트 매장");
-            Pageable pageable = PageRequest.of(0, 20);
+            Pageable pageable = PageRequest.of(0, 20, Sort.by(
+                    Sort.Order.desc("lastVisitDate"),
+                    Sort.Order.desc("loyaltyScore"),
+                    Sort.Order.desc("id")
+            ));
 
             LocalDate now = LocalDate.now();
             List<Customer> customers = List.of(
@@ -290,7 +291,7 @@ public class CustomerServiceImplTest {
             );
 
             Page<Customer> customerPage = new PageImpl<>(customers, pageable, customers.size());
-            when(customerRepository.findByStoreOrderByLastVisitDateDesc(store, pageable))
+            when(customerRepository.findByStore(store, pageable))
                     .thenReturn(customerPage);
 
             // When
@@ -303,7 +304,7 @@ public class CustomerServiceImplTest {
             assertThat(result.customers().get(2).visitDayAgo()).isEqualTo(10);
             assertThat(result.hasNext()).isFalse();
 
-            verify(customerRepository).findByStoreOrderByLastVisitDateDesc(store, pageable);
+            verify(customerRepository).findByStore(store, pageable);
         }
 
         @Test
@@ -311,7 +312,11 @@ public class CustomerServiceImplTest {
         void 단골_고객_조회_충성도_점수_순() {
             // Given
             Store store = createStore(1L, "테스트 매장");
-            Pageable pageable = PageRequest.of(0, 20);
+            Pageable pageable = PageRequest.of(0, 20, Sort.by(
+                    Sort.Order.desc("loyaltyScore"),
+                    Sort.Order.desc("lastVisitDate"),
+                    Sort.Order.desc("id")
+            ));
 
             LocalDate now = LocalDate.now();
             List<Customer> customers = List.of(
@@ -323,7 +328,7 @@ public class CustomerServiceImplTest {
             Page<Customer> customerPage = new PageImpl<>(customers, pageable, customers.size());
             List<CustomerSegment> loyalSegments = List.of(CustomerSegment.LOYAL, CustomerSegment.AT_RISK_LOYAL);
 
-            when(customerRepository.findByStoreAndSegmentInOrderByLoyaltyScoreDesc(store, loyalSegments, pageable))
+            when(customerRepository.findByStoreAndSegmentIn(store, loyalSegments, pageable))
                     .thenReturn(customerPage);
 
             // When
@@ -335,7 +340,7 @@ public class CustomerServiceImplTest {
             assertThat(result.customers().get(1).loyaltyScore()).isEqualTo(85);
             assertThat(result.customers().get(2).loyaltyScore()).isEqualTo(80);
 
-            verify(customerRepository).findByStoreAndSegmentInOrderByLoyaltyScoreDesc(store, loyalSegments, pageable);
+            verify(customerRepository).findByStoreAndSegmentIn(store, loyalSegments, pageable);
         }
 
         @Test
@@ -343,7 +348,11 @@ public class CustomerServiceImplTest {
         void 이탈위험_단골_고객_조회() {
             // Given
             Store store = createStore(1L, "테스트 매장");
-            Pageable pageable = PageRequest.of(0, 20);
+            Pageable pageable = PageRequest.of(0, 20, Sort.by(
+                    Sort.Order.desc("loyaltyScore"),
+                    Sort.Order.desc("lastVisitDate"),
+                    Sort.Order.desc("id")
+            ));
 
             LocalDate now = LocalDate.now();
             List<Customer> customers = List.of(
@@ -352,7 +361,7 @@ public class CustomerServiceImplTest {
             );
 
             Page<Customer> customerPage = new PageImpl<>(customers, pageable, customers.size());
-            when(customerRepository.findByStoreAndSegmentOrderByLoyaltyScoreDesc(store, CustomerSegment.AT_RISK_LOYAL, pageable))
+            when(customerRepository.findByStoreAndSegment(store, CustomerSegment.AT_RISK_LOYAL, pageable))
                     .thenReturn(customerPage);
 
             // When
@@ -363,7 +372,7 @@ public class CustomerServiceImplTest {
             assertThat(result.customers().get(0).loyaltyScore()).isEqualTo(75);
             assertThat(result.customers().get(1).loyaltyScore()).isEqualTo(70);
 
-            verify(customerRepository).findByStoreAndSegmentOrderByLoyaltyScoreDesc(store, CustomerSegment.AT_RISK_LOYAL, pageable);
+            verify(customerRepository).findByStoreAndSegment(store, CustomerSegment.AT_RISK_LOYAL, pageable);
         }
 
         @Test
@@ -371,15 +380,20 @@ public class CustomerServiceImplTest {
         void 이탈_고객_조회() {
             // Given
             Store store = createStore(1L, "테스트 매장");
-            Pageable pageable = PageRequest.of(0, 20);
+            Pageable pageable = PageRequest.of(0, 20, Sort.by(
+                    Sort.Order.desc("loyaltyScore"),
+                    Sort.Order.desc("lastVisitDate"),
+                    Sort.Order.desc("id")
+            ));
 
             LocalDate now = LocalDate.now();
             List<Customer> customers = List.of(
                     createMockCustomer(1L, store, "이탈고객1", now.minusDays(30), 5, 40, CustomerSegment.CHURN_RISK)
             );
 
+            List<CustomerSegment> riskSegments = List.of(CustomerSegment.CHURN_RISK, CustomerSegment.AT_RISK_LOYAL);
             Page<Customer> customerPage = new PageImpl<>(customers, pageable, customers.size());
-            when(customerRepository.findByStoreAndSegmentOrderByLoyaltyScoreDesc(store, CustomerSegment.CHURN_RISK, pageable))
+            when(customerRepository.findByStoreAndSegmentIn(store, riskSegments, pageable))
                     .thenReturn(customerPage);
 
             // When
@@ -389,7 +403,7 @@ public class CustomerServiceImplTest {
             assertThat(result.customers()).hasSize(1);
             assertThat(result.customers().get(0).customerId()).isEqualTo(1L);
 
-            verify(customerRepository).findByStoreAndSegmentOrderByLoyaltyScoreDesc(store, CustomerSegment.CHURN_RISK, pageable);
+            verify(customerRepository).findByStoreAndSegmentIn(store, riskSegments, pageable);
         }
 
         @Test

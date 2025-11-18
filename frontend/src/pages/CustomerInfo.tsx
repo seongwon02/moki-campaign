@@ -3,7 +3,8 @@ import { useNavigate, useParams } from "react-router-dom";
 import Button from "../components/common/Button";
 import backIcon from "../assets/icons/back.svg";
 import type { CustomerDetail } from "../types/customerTypes";
-import { calculateLastVisitDate } from "../utils/dateUtils";
+import { calculateLastVisitDate, formatPhoneNumber } from "../utils/dateUtils";
+import { getCustomerDetail } from "../services/crmApi"; // New import
 import {
   Chart as ChartJS,
   CategoryScale,
@@ -28,42 +29,35 @@ const CustomerInfo: React.FC = () => {
   const navigate = useNavigate();
   const { customerId } = useParams<{ customerId: string }>();
   const [customerData, setCustomerData] = useState<CustomerDetail | null>(null);
+  const [isLoading, setIsLoading] = useState(true); // New state
+  const [error, setError] = useState<string | null>(null); // New state
 
   useEffect(() => {
     const fetchCustomerDetails = async () => {
-      // Simulate API call
-      const mockData: CustomerDetail = {
-        name: "홍길동",
-        visit: {
-          total_visit_count: 23,
-          visit_day_ago: 5,
-        },
-        analytics: {
-          visit_frequency: [
-            { month: "2025-06", count: 3 },
-            { month: "2025-07", count: 4 },
-            { month: "2025-08", count: 2 },
-            { month: "2025-09", count: 5 },
-            { month: "2025-10", count: 7 },
-            { month: "2025-11", count: 5 },
-          ],
-        },
-        customer_id: 1,
-        phone_number: "010-1234-5678",
-        total_spent: 500000,
-        loyalty_score: 90,
-        churn_risk_level: "HIGH",
-        current_points: 1500,
-      };
-      // In a real application, we would fetch data from an API:
-      // const response = await fetch(`/api/customers/${customerId}`);
-      // const data = await response.json();
-      setCustomerData(mockData);
+      if (!customerId) {
+        setError("고객 ID가 제공되지 않았습니다.");
+        setIsLoading(false);
+        return;
+      }
+
+      setIsLoading(true);
+      setError(null);
+      try {
+        const data = await getCustomerDetail(Number(customerId)); // Call the API
+        setCustomerData(data);
+      } catch (err) {
+        const errorMessage =
+          err instanceof Error
+            ? err.message
+            : "알 수 없는 오류가 발생했습니다.";
+        setError(errorMessage);
+        console.error("고객 상세 정보 불러오기 실패:", err);
+      } finally {
+        setIsLoading(false);
+      }
     };
 
-    if (customerId) {
-      fetchCustomerDetails();
-    }
+    fetchCustomerDetails();
   }, [customerId]);
 
   const chartOptions = {
@@ -83,17 +77,17 @@ const CustomerInfo: React.FC = () => {
     },
   };
 
+  // Ensure customerData and analytics are available before mapping
   const chartData = {
     labels:
-      customerData?.analytics.visit_frequency.map(
+      customerData?.analytics?.map(
+        // Added optional chaining
         (item) => `${parseInt(item.month.split("-")[1])}월`
       ) || [],
     datasets: [
       {
         label: "월별 방문 횟수",
-        data:
-          customerData?.analytics.visit_frequency.map((item) => item.count) ||
-          [],
+        data: customerData?.analytics?.map((item) => item.count) || [], // Added optional chaining
         backgroundColor: "rgba(74, 124, 233, 0.6)",
         borderColor: "rgba(74, 124, 233, 1)",
         borderWidth: 1,
@@ -174,7 +168,7 @@ const CustomerInfo: React.FC = () => {
                   단골
                 </span>
               )}
-              {customerData.churn_risk_level === "LOW" && (
+              {customerData.churn_risk_level === "HIGH" && (
                 <span className="mr-2 px-2 py-1 rounded-full text-sm bg-red-500 text-white">
                   이탈 위험
                 </span>
@@ -184,7 +178,7 @@ const CustomerInfo: React.FC = () => {
           </div>
           <div className="flex justify-between mb-2 text-xl">
             <span className="font-semibold">전화번호:</span>
-            <span className="font-bold">{customerData.phone_number}</span>
+            <span className="font-bold">{formatPhoneNumber(customerData.phone_number)}</span>
           </div>
           <div className="flex justify-between mb-2 text-xl">
             <span className="font-semibold">사용 금액:</span>
@@ -219,13 +213,13 @@ const CustomerInfo: React.FC = () => {
           <div className="flex justify-between mb-2 text-xl">
             <span className="font-semibold">총 방문 횟수:</span>
             <span className="font-bold">
-              {customerData.visit.total_visit_count}회
+              {customerData.total_visit_count}회
             </span>
           </div>
           <div className="flex justify-between mb-2 text-xl">
             <span className="font-semibold">마지막 방문일:</span>
             <span className="font-bold">
-              {calculateLastVisitDate(customerData.visit.visit_day_ago)}
+              {calculateLastVisitDate(customerData.visit_day_ago)}
             </span>
           </div>
         </div>

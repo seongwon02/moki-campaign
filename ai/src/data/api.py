@@ -182,8 +182,8 @@ def analyze_customer_data(df: pd.DataFrame) -> pd.DataFrame:
     
     df["customer_segment"] = "GENERAL"
     df.loc[df["is_loyal_customer"], "customer_segment"] = "LOYAL"
-    df.loc[df["is_at_risk"], "customer_segment"] = "CHURN-RISK"
-    df.loc[df["is_loyal_customer"] & df["is_at_risk"], "customer_segment"] = "AT-RISK LOYAL"
+    df.loc[df["is_at_risk"], "customer_segment"] = "CHURN_RISK"
+    df.loc[df["is_loyal_customer"] & df["is_at_risk"], "customer_segment"] = "AT_RISK_LOYAL"
     
     return df
 

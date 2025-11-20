@@ -44,9 +44,5 @@ public record CustomerDetailResponseDto (
 
     @Schema(description = "총 방문 횟수", example = "100")
     @JsonProperty("visit_day_ago")
-    Integer visitDayAgo,
-
-    @Schema(description = "월별 방문 통계 리스트")
-    @JsonProperty("analytics")
-    List<AnalyticsReponseDto> analytics
+    Integer visitDayAgo
 ){}

@@ -3,6 +3,7 @@ package com.example.moki_campaign.domain.customer.controller;
 import com.example.moki_campaign.domain.customer.dto.response.CustomerDetailResponseDto;
 import com.example.moki_campaign.domain.customer.dto.response.CustomerListResponseDto;
 import com.example.moki_campaign.domain.customer.dto.response.DeclinedLoyalSummaryResponseDto;
+import com.example.moki_campaign.domain.customer.dto.response.VisitGraphResponseDto;
 import com.example.moki_campaign.domain.customer.service.CustomerService;
 import com.example.moki_campaign.domain.store.entity.Store;
 import com.example.moki_campaign.global.auth.CurrentStore;
@@ -73,6 +74,31 @@ public class CustomerController {
     ) {
 
         CustomerDetailResponseDto response = customerService.findCustomerDetail(store, customerId);
+
+        return ResponseEntity.ok(response);
+    }
+
+    @Operation(
+            summary = "고객 방문 빈도 그래프 조회",
+            description = """
+                    특정 고객의 방문 빈도 그래프 데이터를 조회합니다.
+                    - period=month: 최근 6개월 월별 방문 횟수 (라벨: yyyy-MM)
+                    - period=week: 최근 8주 주별 방문 횟수 (라벨: yyyy-MM-dd, 월요일 기준)
+                    """
+    )
+    @ApiResponse(responseCode = "200", description = "조회 성공")
+    @GetMapping("/{customerId}/graph")
+    @Parameters({
+            @Parameter(name = "customerId", description = "고객 ID", required = true, example = "1"),
+            @Parameter(name = "period", description = "조회 기간 단위 [week, month]", required = true, example = "month")
+    })
+    public ResponseEntity<VisitGraphResponseDto> getCustomerVisitGraph(
+            @PathVariable Long customerId,
+            @RequestParam String period,
+            @Parameter(hidden = true) @CurrentStore Store store
+    ) {
+
+        VisitGraphResponseDto response = customerService.findCustomerVisitGraph(store, customerId, period);
 
         return ResponseEntity.ok(response);
     }

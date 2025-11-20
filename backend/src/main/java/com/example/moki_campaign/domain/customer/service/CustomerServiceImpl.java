@@ -5,6 +5,8 @@ import com.example.moki_campaign.domain.customer.dto.response.CustomerDetailResp
 import com.example.moki_campaign.domain.customer.dto.response.CustomerListResponseDto;
 import com.example.moki_campaign.domain.customer.dto.response.CustomerSummaryDto;
 import com.example.moki_campaign.domain.customer.dto.response.DeclinedLoyalSummaryResponseDto;
+import com.example.moki_campaign.domain.customer.dto.response.VisitGraphItemDto;
+import com.example.moki_campaign.domain.customer.dto.response.VisitGraphResponseDto;
 import com.example.moki_campaign.domain.customer.entity.Customer;
 import com.example.moki_campaign.domain.customer.entity.CustomerSegment;
 import com.example.moki_campaign.domain.customer.repository.CustomerRepository;
@@ -30,10 +32,12 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.context.annotation.Lazy;
 
+import java.time.DayOfWeek;
 import java.time.LocalDate;
 import java.time.YearMonth;
 import java.time.format.DateTimeFormatter;
 import java.time.temporal.ChronoUnit;
+import java.time.temporal.TemporalAdjusters;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -168,14 +172,6 @@ public class CustomerServiceImpl implements CustomerService {
         // 이탈 위험 수준 계산
         String churnRiskLevel = determineChurnRiskLevel(customer.getSegment());
 
-        // 최근 6개월 방문 데이터 조회 (현재 달 포함)
-        DateRange dateRange = DateRangeCalculator.getLastSixMonthsRange(now);
-        List<DailyVisit> visits = dailyVisitRepository.findByCustomerIdAndDateRange(
-                customerId, dateRange.startDate(), dateRange.endDate());
-
-        // 월별 방문 횟수 집계
-        List<AnalyticsReponseDto> analytics = calculateMonthlyVisits(visits, now);
-
         log.info("매장({}) 고객({}) 상세 조회 - 총 방문: {}회, 충성도: {}",
                 store.getName(), customer.getName(), customer.getTotalVisitCount(), customer.getLoyaltyScore());
 
@@ -189,9 +185,102 @@ public class CustomerServiceImpl implements CustomerService {
                 customer.getSegment().toString(),
                 customer.getPoints(),
                 customer.getTotalVisitCount(),
-                daysSinceLastVisit,
-                analytics
+                daysSinceLastVisit
         );
+    }
+
+    // 고객 방문 빈도 그래프 조회
+    @Override
+    @Transactional(readOnly = true)
+    public VisitGraphResponseDto findCustomerVisitGraph(Store store, Long customerId, String period) {
+        // period 검증
+        if (!period.equalsIgnoreCase("week") && !period.equalsIgnoreCase("month")) {
+            throw new BusinessException(ErrorCode.INVALID_INPUT_VALUE);
+        }
+
+        // 고객 존재 확인
+        Customer customer = customerRepository.findByStoreAndId(store, customerId)
+                .orElseThrow(() -> new BusinessException(ErrorCode.CUSTOMER_NOT_FOUND));
+
+        LocalDate now = LocalDate.now();
+        List<VisitGraphItemDto> graphData;
+
+        if (period.equalsIgnoreCase("month")) {
+            // 월 단위: 최근 6개월
+            graphData = calculateMonthlyGraph(customerId, now);
+        } else {
+            // 주 단위: 최근 8주
+            graphData = calculateWeeklyGraph(customerId, now);
+        }
+
+        log.info("매장({}) 고객({}) 방문 그래프 조회 - period: {}, 데이터 포인트: {}개",
+                store.getName(), customer.getName(), period, graphData.size());
+
+        return new VisitGraphResponseDto(graphData);
+    }
+
+    // 월별 방문 그래프 데이터 계산 (최근 6개월)
+    private List<VisitGraphItemDto> calculateMonthlyGraph(Long customerId, LocalDate referenceDate) {
+        YearMonth currentMonth = YearMonth.from(referenceDate);
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM");
+
+        // 6개월 전부터 현재 월까지의 날짜 범위 계산
+        LocalDate startDate = currentMonth.minusMonths(5).atDay(1);
+        LocalDate endDate = currentMonth.atEndOfMonth();
+
+        // 방문 데이터 조회
+        List<DailyVisit> visits = dailyVisitRepository.findByCustomerIdAndDateRange(
+                customerId, startDate, endDate);
+
+        // 월별로 그룹화
+        Map<YearMonth, Integer> visitCountByMonth = new HashMap<>();
+        for (DailyVisit visit : visits) {
+            YearMonth month = YearMonth.from(visit.getVisitDate());
+            visitCountByMonth.put(month, visitCountByMonth.getOrDefault(month, 0) + 1);
+        }
+
+        // 6개월 데이터 생성 (과거 -> 현재 순서)
+        List<VisitGraphItemDto> graphData = new ArrayList<>();
+        for (int i = 5; i >= 0; i--) {
+            YearMonth targetMonth = currentMonth.minusMonths(i);
+            int count = visitCountByMonth.getOrDefault(targetMonth, 0);
+            graphData.add(new VisitGraphItemDto(targetMonth.format(formatter), count));
+        }
+
+        return graphData;
+    }
+
+    // 주별 방문 그래프 데이터 계산 (최근 8주)
+    private List<VisitGraphItemDto> calculateWeeklyGraph(Long customerId, LocalDate referenceDate) {
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
+
+        // 현재 날짜가 속한 주의 월요일을 구함 (주의 시작일)
+        LocalDate currentWeekStart = referenceDate.with(TemporalAdjusters.previousOrSame(DayOfWeek.MONDAY));
+
+        // 8주 전 월요일부터 현재 주 일요일까지의 날짜 범위
+        LocalDate startDate = currentWeekStart.minusWeeks(7);
+        LocalDate endDate = currentWeekStart.plusDays(6); // 일요일까지
+
+        // 방문 데이터 조회
+        List<DailyVisit> visits = dailyVisitRepository.findByCustomerIdAndDateRange(
+                customerId, startDate, endDate);
+
+        // 주별로 그룹화 (각 방문 날짜가 속한 주의 월요일 기준)
+        Map<LocalDate, Integer> visitCountByWeek = new HashMap<>();
+        for (DailyVisit visit : visits) {
+            LocalDate weekStart = visit.getVisitDate().with(TemporalAdjusters.previousOrSame(DayOfWeek.MONDAY));
+            visitCountByWeek.put(weekStart, visitCountByWeek.getOrDefault(weekStart, 0) + 1);
+        }
+
+        // 8주 데이터 생성 (과거 -> 현재 순서)
+        List<VisitGraphItemDto> graphData = new ArrayList<>();
+        for (int i = 7; i >= 0; i--) {
+            LocalDate weekStart = currentWeekStart.minusWeeks(i);
+            int count = visitCountByWeek.getOrDefault(weekStart, 0);
+            graphData.add(new VisitGraphItemDto(weekStart.format(formatter), count));
+        }
+
+        return graphData;
     }
 
     // 이탈 위험 수준 판단

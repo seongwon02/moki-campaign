@@ -8,7 +8,7 @@ import org.springframework.stereotype.Component;
 
 /**
  * AI 고객 분석 스케줄러
- * 매달 1일 자정에 실행되어 직전 6개월 데이터 분석 통한 단골 점수와 segment 업데이트
+ * 매주 월요일 자정에 실행되어 직전 6개월 데이터 분석 통한 단골 점수와 segment 업데이트
  */
 @Component
 @RequiredArgsConstructor
@@ -18,13 +18,14 @@ public class CustomerAnalysisScheduler {
     private final CustomerService customerService;
 
     /**
-     * 매달 1일 00:00:00에 실행
+     * 매주 월요일 00:00:00에 실행
      * cron 표현식: "초 분 시 일 월 요일"
+     * MON: 월요일 (Sunday=SUN, Monday=MON, Tuesday=TUE, ...)
      */
-    @Scheduled(cron = "0 0 0 1 * ?")
-    public void scheduleMonthlyAnalysis() {
+    @Scheduled(cron = "0 0 0 ? * MON")
+    public void scheduleWeeklyAnalysis() {
         log.info("========================================");
-        log.info("AI 고객 분석 스케줄 시작 (매달 1일)");
+        log.info("AI 고객 분석 스케줄 시작 (매주 월요일)");
         log.info("========================================");
 
         try {

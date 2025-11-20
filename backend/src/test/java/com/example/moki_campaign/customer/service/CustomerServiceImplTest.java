@@ -5,6 +5,8 @@ import com.example.moki_campaign.domain.customer.dto.response.CustomerDetailResp
 import com.example.moki_campaign.domain.customer.dto.response.CustomerListResponseDto;
 import com.example.moki_campaign.domain.customer.dto.response.CustomerSummaryDto;
 import com.example.moki_campaign.domain.customer.dto.response.DeclinedLoyalSummaryResponseDto;
+import com.example.moki_campaign.domain.customer.dto.response.VisitGraphItemDto;
+import com.example.moki_campaign.domain.customer.dto.response.VisitGraphResponseDto;
 import com.example.moki_campaign.domain.customer.entity.Customer;
 import com.example.moki_campaign.domain.customer.entity.CustomerSegment;
 import com.example.moki_campaign.domain.customer.repository.CustomerRepository;
@@ -448,10 +450,6 @@ public class CustomerServiceImplTest {
             when(customerRepository.findByStoreAndId(store, customerId))
                     .thenReturn(Optional.of(customer));
 
-            // 최근 6개월 방문 데이터
-            List<DailyVisit> visits = createMonthlyVisits(customerId, store, now);
-            when(dailyVisitRepository.findByCustomerIdAndDateRange(eq(customerId), any(LocalDate.class), any(LocalDate.class)))
-                    .thenReturn(visits);
 
             // When
             CustomerDetailResponseDto result = customerService.findCustomerDetail(store, customerId);
@@ -463,55 +461,10 @@ public class CustomerServiceImplTest {
             assertThat(result.totalSpent()).isEqualTo(500000L);
             assertThat(result.loyaltyScore()).isEqualTo(85);
             assertThat(result.churnRiskLevel()).isEqualTo("LOW");
+            assertThat(result.segment()).isEqualTo("LOYAL");
             assertThat(result.currentPoints()).isEqualTo(1500);
             assertThat(result.totalVisitCount()).isEqualTo(23);
             assertThat(result.visitDayAgo()).isEqualTo(5);
-            assertThat(result.analytics()).hasSize(6); // 6개월 데이터
-        }
-
-        @Test
-        @DisplayName("월별 방문 통계가 이전 달부터 현재 달까지 순서대로 반환")
-        void 월별_방문_통계_순서_확인() {
-            // Given
-            Store store = createStore(1L, "테스트 매장");
-            Long customerId = 1L;
-            LocalDate now = LocalDate.now(); // 현재 날짜 사용
-
-            Customer customer = createMockCustomer(customerId, store, "고객1", now.minusDays(5), 10, 85, CustomerSegment.GENERAL);
-            when(customerRepository.findByStoreAndId(store, customerId))
-                    .thenReturn(Optional.of(customer));
-
-            // 현재 기준 최근 6개월 데이터 생성
-            YearMonth currentMonth = YearMonth.from(now);
-            List<DailyVisit> visits = new ArrayList<>();
-
-            // 각 달에 방문 기록 추가
-            for (int i = 5; i >= 0; i--) {
-                YearMonth targetMonth = currentMonth.minusMonths(i);
-                int count = 6 - i; // 이전 달일수록 적은 횟수
-
-                for (int j = 0; j < count; j++) {
-                    LocalDate visitDate = targetMonth.atDay(5 + j * 5);
-                    visits.add(createMockDailyVisit((long) visits.size() + 1, customerId, store, visitDate, 10000));
-                }
-            }
-
-            when(dailyVisitRepository.findByCustomerIdAndDateRange(eq(customerId), any(LocalDate.class), any(LocalDate.class)))
-                    .thenReturn(visits);
-
-            // When
-            CustomerDetailResponseDto result = customerService.findCustomerDetail(store, customerId);
-
-            // Then
-            List<AnalyticsReponseDto> analytics = result.analytics();
-            assertThat(analytics).hasSize(6);
-
-            // 이전 달부터 현재 달까지 순서대로 확인
-            for (int i = 0; i < 6; i++) {
-                YearMonth expectedMonth = currentMonth.minusMonths(5 - i);
-                assertThat(analytics.get(i).month()).isEqualTo(expectedMonth.format(DateTimeFormatter.ofPattern("yyyy-MM")));
-                assertThat(analytics.get(i).count()).isGreaterThanOrEqualTo(0);
-            }
         }
 
         @Test
@@ -524,14 +477,14 @@ public class CustomerServiceImplTest {
             Customer customer = createMockCustomer(customerId, store, "이탈고객", LocalDate.now().minusDays(30), 5, 30, CustomerSegment.CHURN_RISK);
             when(customerRepository.findByStoreAndId(store, customerId))
                     .thenReturn(Optional.of(customer));
-            when(dailyVisitRepository.findByCustomerIdAndDateRange(eq(customerId), any(LocalDate.class), any(LocalDate.class)))
-                    .thenReturn(List.of());
 
             // When
             CustomerDetailResponseDto result = customerService.findCustomerDetail(store, customerId);
 
             // Then
             assertThat(result.churnRiskLevel()).isEqualTo("HIGH");
+            assertThat(result.segment()).isEqualTo("CHURN_RISK");
+            assertThat(result.visitDayAgo()).isEqualTo(30);
         }
 
         @Test
@@ -544,14 +497,14 @@ public class CustomerServiceImplTest {
             Customer customer = createMockCustomer(customerId, store, "이탈위험단골", LocalDate.now().minusDays(10), 15, 70, CustomerSegment.AT_RISK_LOYAL);
             when(customerRepository.findByStoreAndId(store, customerId))
                     .thenReturn(Optional.of(customer));
-            when(dailyVisitRepository.findByCustomerIdAndDateRange(eq(customerId), any(LocalDate.class), any(LocalDate.class)))
-                    .thenReturn(List.of());
 
             // When
             CustomerDetailResponseDto result = customerService.findCustomerDetail(store, customerId);
 
             // Then
             assertThat(result.churnRiskLevel()).isEqualTo("MEDIUM");
+            assertThat(result.segment()).isEqualTo("AT_RISK_LOYAL");
+            assertThat(result.visitDayAgo()).isEqualTo(10);
         }
 
         @Test
@@ -564,14 +517,14 @@ public class CustomerServiceImplTest {
             Customer customer = createMockCustomer(customerId, store, "충성고객", LocalDate.now().minusDays(2), 30, 95, CustomerSegment.LOYAL);
             when(customerRepository.findByStoreAndId(store, customerId))
                     .thenReturn(Optional.of(customer));
-            when(dailyVisitRepository.findByCustomerIdAndDateRange(eq(customerId), any(LocalDate.class), any(LocalDate.class)))
-                    .thenReturn(List.of());
 
             // When
             CustomerDetailResponseDto result = customerService.findCustomerDetail(store, customerId);
 
             // Then
             assertThat(result.churnRiskLevel()).isEqualTo("LOW");
+            assertThat(result.segment()).isEqualTo("LOYAL");
+            assertThat(result.visitDayAgo()).isEqualTo(2);
         }
 
         @Test
@@ -588,6 +541,214 @@ public class CustomerServiceImplTest {
             assertThatThrownBy(() -> customerService.findCustomerDetail(store, customerId))
                     .isInstanceOf(BusinessException.class)
                     .hasFieldOrPropertyWithValue("errorCode", ErrorCode.CUSTOMER_NOT_FOUND);
+        }
+    }
+
+    @Nested
+    @DisplayName("고객 방문 빈도 그래프 조회")
+    class FindCustomerVisitGraphTest {
+
+        @Test
+        @DisplayName("월별 그래프 조회 - 최근 6개월 데이터 정상 반환")
+        void 월별_그래프_조회_성공() {
+            // Given
+            Store store = createStore(1L, "테스트 매장");
+            Long customerId = 1L;
+            LocalDate now = LocalDate.now();
+
+            Customer customer = createMockCustomer(customerId, store, "고객1", now.minusDays(5), 20, 85, CustomerSegment.LOYAL);
+            when(customerRepository.findByStoreAndId(store, customerId))
+                    .thenReturn(Optional.of(customer));
+
+            // 최근 6개월 방문 데이터 생성
+            YearMonth currentMonth = YearMonth.from(now);
+            List<DailyVisit> visits = new ArrayList<>();
+            for (int i = 5; i >= 0; i--) {
+                YearMonth targetMonth = currentMonth.minusMonths(i);
+                LocalDate visitDate = targetMonth.atDay(10);
+                visits.add(createMockDailyVisit((long) (i + 1), customerId, store, visitDate, 10000));
+            }
+
+            when(dailyVisitRepository.findByCustomerIdAndDateRange(eq(customerId), any(LocalDate.class), any(LocalDate.class)))
+                    .thenReturn(visits);
+
+            // When
+            VisitGraphResponseDto result = customerService.findCustomerVisitGraph(store, customerId, "month");
+
+            // Then
+            assertThat(result.graph()).hasSize(6);
+
+            // 라벨이 yyyy-MM 형식인지 확인
+            for (VisitGraphItemDto item : result.graph()) {
+                assertThat(item.label()).matches("\\d{4}-\\d{2}");
+                assertThat(item.count()).isGreaterThanOrEqualTo(0);
+            }
+
+            verify(customerRepository).findByStoreAndId(store, customerId);
+            verify(dailyVisitRepository).findByCustomerIdAndDateRange(eq(customerId), any(LocalDate.class), any(LocalDate.class));
+        }
+
+        @Test
+        @DisplayName("주별 그래프 조회 - 최근 8주 데이터 정상 반환")
+        void 주별_그래프_조회_성공() {
+            // Given
+            Store store = createStore(1L, "테스트 매장");
+            Long customerId = 1L;
+            LocalDate now = LocalDate.now();
+
+            Customer customer = createMockCustomer(customerId, store, "고객1", now.minusDays(5), 15, 80, CustomerSegment.GENERAL);
+            when(customerRepository.findByStoreAndId(store, customerId))
+                    .thenReturn(Optional.of(customer));
+
+            // 최근 8주 방문 데이터 생성
+            List<DailyVisit> visits = new ArrayList<>();
+            for (int i = 0; i < 8; i++) {
+                LocalDate visitDate = now.minusWeeks(i);
+                visits.add(createMockDailyVisit((long) (i + 1), customerId, store, visitDate, 10000));
+            }
+
+            when(dailyVisitRepository.findByCustomerIdAndDateRange(eq(customerId), any(LocalDate.class), any(LocalDate.class)))
+                    .thenReturn(visits);
+
+            // When
+            VisitGraphResponseDto result = customerService.findCustomerVisitGraph(store, customerId, "week");
+
+            // Then
+            assertThat(result.graph()).hasSize(8);
+
+            // 라벨이 yyyy-MM-dd 형식인지 확인 (주의 시작일 = 월요일)
+            for (VisitGraphItemDto item : result.graph()) {
+                assertThat(item.label()).matches("\\d{4}-\\d{2}-\\d{2}");
+                assertThat(item.count()).isGreaterThanOrEqualTo(0);
+            }
+
+            verify(customerRepository).findByStoreAndId(store, customerId);
+            verify(dailyVisitRepository).findByCustomerIdAndDateRange(eq(customerId), any(LocalDate.class), any(LocalDate.class));
+        }
+
+        @Test
+        @DisplayName("월별 그래프 - 방문 데이터가 없으면 모두 0으로 반환")
+        void 월별_그래프_방문_데이터_없음() {
+            // Given
+            Store store = createStore(1L, "테스트 매장");
+            Long customerId = 1L;
+
+            Customer customer = createMockCustomer(customerId, store, "신규고객", LocalDate.now().minusDays(1), 0, 50, CustomerSegment.GENERAL);
+            when(customerRepository.findByStoreAndId(store, customerId))
+                    .thenReturn(Optional.of(customer));
+
+            when(dailyVisitRepository.findByCustomerIdAndDateRange(eq(customerId), any(LocalDate.class), any(LocalDate.class)))
+                    .thenReturn(List.of());
+
+            // When
+            VisitGraphResponseDto result = customerService.findCustomerVisitGraph(store, customerId, "month");
+
+            // Then
+            assertThat(result.graph()).hasSize(6);
+            for (VisitGraphItemDto item : result.graph()) {
+                assertThat(item.count()).isEqualTo(0);
+            }
+        }
+
+        @Test
+        @DisplayName("주별 그래프 - 방문 데이터가 없으면 모두 0으로 반환")
+        void 주별_그래프_방문_데이터_없음() {
+            // Given
+            Store store = createStore(1L, "테스트 매장");
+            Long customerId = 1L;
+
+            Customer customer = createMockCustomer(customerId, store, "신규고객", LocalDate.now().minusDays(1), 0, 50, CustomerSegment.GENERAL);
+            when(customerRepository.findByStoreAndId(store, customerId))
+                    .thenReturn(Optional.of(customer));
+
+            when(dailyVisitRepository.findByCustomerIdAndDateRange(eq(customerId), any(LocalDate.class), any(LocalDate.class)))
+                    .thenReturn(List.of());
+
+            // When
+            VisitGraphResponseDto result = customerService.findCustomerVisitGraph(store, customerId, "week");
+
+            // Then
+            assertThat(result.graph()).hasSize(8);
+            for (VisitGraphItemDto item : result.graph()) {
+                assertThat(item.count()).isEqualTo(0);
+            }
+        }
+
+        @Test
+        @DisplayName("잘못된 period 값으로 조회 시 예외 발생")
+        void 잘못된_period_값_예외() {
+            // Given
+            Store store = createStore(1L, "테스트 매장");
+            Long customerId = 1L;
+
+            // When & Then
+            // period 검증이 먼저 일어나므로 customerRepository mock 불필요
+            assertThatThrownBy(() -> customerService.findCustomerVisitGraph(store, customerId, "invalid"))
+                    .isInstanceOf(BusinessException.class)
+                    .hasFieldOrPropertyWithValue("errorCode", ErrorCode.INVALID_INPUT_VALUE);
+        }
+
+        @Test
+        @DisplayName("존재하지 않는 고객 조회 시 예외 발생")
+        void 존재하지_않는_고객_예외() {
+            // Given
+            Store store = createStore(1L, "테스트 매장");
+            Long customerId = 999L;
+
+            when(customerRepository.findByStoreAndId(store, customerId))
+                    .thenReturn(Optional.empty());
+
+            // When & Then
+            assertThatThrownBy(() -> customerService.findCustomerVisitGraph(store, customerId, "month"))
+                    .isInstanceOf(BusinessException.class)
+                    .hasFieldOrPropertyWithValue("errorCode", ErrorCode.CUSTOMER_NOT_FOUND);
+        }
+
+        @Test
+        @DisplayName("월별 그래프 - 여러 달에 방문 데이터가 있을 때 정확한 집계")
+        void 월별_그래프_여러_달_집계() {
+            // Given
+            Store store = createStore(1L, "테스트 매장");
+            Long customerId = 1L;
+            LocalDate now = LocalDate.now();
+
+            Customer customer = createMockCustomer(customerId, store, "단골고객", now.minusDays(2), 25, 90, CustomerSegment.LOYAL);
+            when(customerRepository.findByStoreAndId(store, customerId))
+                    .thenReturn(Optional.of(customer));
+
+            // 현재 달에 3번, 1달 전에 2번, 2달 전에 1번
+            YearMonth currentMonth = YearMonth.from(now);
+            List<DailyVisit> visits = new ArrayList<>();
+
+            // 현재 달 3번
+            for (int i = 0; i < 3; i++) {
+                visits.add(createMockDailyVisit((long) (visits.size() + 1), customerId, store,
+                    currentMonth.atDay(5 + i * 5), 10000));
+            }
+
+            // 1달 전 2번
+            for (int i = 0; i < 2; i++) {
+                visits.add(createMockDailyVisit((long) (visits.size() + 1), customerId, store,
+                    currentMonth.minusMonths(1).atDay(10 + i * 5), 10000));
+            }
+
+            // 2달 전 1번
+            visits.add(createMockDailyVisit((long) (visits.size() + 1), customerId, store,
+                currentMonth.minusMonths(2).atDay(15), 10000));
+
+            when(dailyVisitRepository.findByCustomerIdAndDateRange(eq(customerId), any(LocalDate.class), any(LocalDate.class)))
+                    .thenReturn(visits);
+
+            // When
+            VisitGraphResponseDto result = customerService.findCustomerVisitGraph(store, customerId, "month");
+
+            // Then
+            assertThat(result.graph()).hasSize(6);
+
+            // 마지막 달(현재 달)이 3번 방문인지 확인
+            VisitGraphItemDto lastMonth = result.graph().get(5);
+            assertThat(lastMonth.label()).isEqualTo(currentMonth.format(DateTimeFormatter.ofPattern("yyyy-MM")));
+            assertThat(lastMonth.count()).isEqualTo(3);
         }
     }
 

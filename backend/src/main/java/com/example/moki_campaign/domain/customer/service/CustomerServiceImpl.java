@@ -383,23 +383,24 @@ public class CustomerServiceImpl implements CustomerService {
         }
     }
 
-    // ai 분석을 위한 요청 데이터 생성
+    // ai 분석을 위한 요청 데이터 생성 (지난 8주 데이터)
     private List<AiCustomerDataInputDto> prepareDataForAnalysis(Store store) {
-        DateRange dateRange = DateRangeCalculator.getLastSixMonthsRange(LocalDate.now());
-        LocalDate startDate = dateRange.startDate();
-        LocalDate endDate = dateRange.endDate();
+        LocalDate now = LocalDate.now();
+
+        // 현재 주의 월요일을 기준으로 8주 전부터 현재 주 일요일까지
+        LocalDate currentWeekStart = now.with(TemporalAdjusters.previousOrSame(DayOfWeek.MONDAY));
+        LocalDate startDate = currentWeekStart.minusWeeks(7);  // 8주 전 월요일
+        LocalDate endDate = currentWeekStart.plusDays(6);      // 현재 주 일요일
 
         List<Customer> customers = customerRepository.findAllByStore(store);
 
+        // 매장에 고객이 존재하지 않는 경우
         if (customers.isEmpty()) {
-            log.warn("매장({})에 고객 데이터가 없습니다.", store.getName());
             return List.of();
         }
 
         List<DailyVisit> visits = dailyVisitRepository
                 .findByStoreAndDateRangeWithCustomer(store, startDate, endDate);
-
-        log.info("고객 수: {}명, 방문 기록 수: {}건", customers.size(), visits.size());
 
         Map<Long, List<DailyVisit>> visitsByCustomer = visits.stream()
                 .collect(Collectors.groupingBy(v -> v.getCustomer().getId()));
@@ -408,54 +409,64 @@ public class CustomerServiceImpl implements CustomerService {
                 .map(customer -> {
                     List<DailyVisit> customerVisits = visitsByCustomer
                             .getOrDefault(customer.getId(), List.of());
-                    return convertToAiInputDto(customer, customerVisits, endDate);
+                    return convertToAiInputDto(customer, customerVisits, now);
                 })
                 .collect(Collectors.toList());
-
-        log.debug("AI 분석용 데이터 변환 완료: {}건", result.size());
 
         return result;
     }
 
-    // ai 고객 분석용 dto 생성
+    // ai 고객 분석용 dto 생성 (주별 방문 데이터)
     private AiCustomerDataInputDto convertToAiInputDto(
             Customer customer,
             List<DailyVisit> visits,
             LocalDate analysisEndDate) {
 
-        double totalAmount = visits.stream()
-                .mapToInt(DailyVisit::getAmount)
-                .sum();
+        double totalAmount = customer.getTotalAmount();
 
-        int totalVisits = visits.size();
+        int totalVisits = customer.getTotalVisitCount();
 
-        int daysSinceLastVisit = visits.stream()
-                .map(DailyVisit::getVisitDate)
-                .max(LocalDate::compareTo)
-                .map(lastVisit -> (int) ChronoUnit.DAYS.between(lastVisit, analysisEndDate))
-                .orElse(180); // 방문 기록이 없으면 매우 큰 값
+        int daysSinceLastVisit = (int) ChronoUnit.DAYS.between(customer.getLastVisitDate(), analysisEndDate);
 
-        YearMonth endMonth = YearMonth.from(analysisEndDate);
+        // 현재 주의 월요일 기준
+        LocalDate currentWeekStart = analysisEndDate.with(TemporalAdjusters.previousOrSame(DayOfWeek.MONDAY));
 
-        int visits6MonthAgo = countVisitsInMonth(visits, endMonth.minusMonths(5));
-        int visits5MonthAgo = countVisitsInMonth(visits, endMonth.minusMonths(4));
-        int visits4MonthAgo = countVisitsInMonth(visits, endMonth.minusMonths(3));
-        int visits3MonthAgo = countVisitsInMonth(visits, endMonth.minusMonths(2));
-        int visits2MonthAgo = countVisitsInMonth(visits, endMonth.minusMonths(1));
-        int visits1MonthAgo = countVisitsInMonth(visits, endMonth);
+        // 8주 전부터 1주 전까지 각 주의 방문 횟수 계산
+        int visits8WeekAgo = countVisitsInWeek(visits, currentWeekStart.minusWeeks(7));
+        int visits7WeekAgo = countVisitsInWeek(visits, currentWeekStart.minusWeeks(6));
+        int visits6WeekAgo = countVisitsInWeek(visits, currentWeekStart.minusWeeks(5));
+        int visits5WeekAgo = countVisitsInWeek(visits, currentWeekStart.minusWeeks(4));
+        int visits4WeekAgo = countVisitsInWeek(visits, currentWeekStart.minusWeeks(3));
+        int visits3WeekAgo = countVisitsInWeek(visits, currentWeekStart.minusWeeks(2));
+        int visits2WeekAgo = countVisitsInWeek(visits, currentWeekStart.minusWeeks(1));
+        int visits1WeekAgo = countVisitsInWeek(visits, currentWeekStart);
 
         return AiCustomerDataInputDto.builder()
                 .customerId(String.valueOf(customer.getId()))
                 .amount(totalAmount)
                 .totalVisits(totalVisits)
                 .daysSinceLastVisit(daysSinceLastVisit)
-                .visits6MonthAgo(visits6MonthAgo)
-                .visits5MonthAgo(visits5MonthAgo)
-                .visits4MonthAgo(visits4MonthAgo)
-                .visits3MonthAgo(visits3MonthAgo)
-                .visits2MonthAgo(visits2MonthAgo)
-                .visits1MonthAgo(visits1MonthAgo)
+                .visits8WeekAgo(visits8WeekAgo)
+                .visits7WeekAgo(visits7WeekAgo)
+                .visits6WeekAgo(visits6WeekAgo)
+                .visits5WeekAgo(visits5WeekAgo)
+                .visits4WeekAgo(visits4WeekAgo)
+                .visits3WeekAgo(visits3WeekAgo)
+                .visits2WeekAgo(visits2WeekAgo)
+                .visits1WeekAgo(visits1WeekAgo)
                 .build();
+    }
+
+    // 특정 주 동안의 방문 횟수 계산 (월요일 시작 기준)
+    private int countVisitsInWeek(List<DailyVisit> visits, LocalDate weekStart) {
+        LocalDate weekEnd = weekStart.plusDays(6); // 일요일까지
+
+        return (int) visits.stream()
+                .filter(visit -> {
+                    LocalDate visitDate = visit.getVisitDate();
+                    return !visitDate.isBefore(weekStart) && !visitDate.isAfter(weekEnd);
+                })
+                .count();
     }
 
     // 한달 동안 방문 횟수 계산

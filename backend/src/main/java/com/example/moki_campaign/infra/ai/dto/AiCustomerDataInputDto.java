@@ -17,22 +17,28 @@ public record AiCustomerDataInputDto(
         @JsonProperty("days_since_last_visit")
         Integer daysSinceLastVisit,
 
-        @JsonProperty("visits_6_month_ago")
-        Integer visits6MonthAgo,
+        @JsonProperty("visits_8_week_ago")
+        Integer visits8WeekAgo,
 
-        @JsonProperty("visits_5_month_ago")
-        Integer visits5MonthAgo,
+        @JsonProperty("visits_7_week_ago")
+        Integer visits7WeekAgo,
 
-        @JsonProperty("visits_4_month_ago")
-        Integer visits4MonthAgo,
+        @JsonProperty("visits_6_week_ago")
+        Integer visits6WeekAgo,
 
-        @JsonProperty("visits_3_month_ago")
-        Integer visits3MonthAgo,
+        @JsonProperty("visits_5_week_ago")
+        Integer visits5WeekAgo,
 
-        @JsonProperty("visits_2_month_ago")
-        Integer visits2MonthAgo,
+        @JsonProperty("visits_4_week_ago")
+        Integer visits4WeekAgo,
 
-        @JsonProperty("visits_1_month_ago")
-        Integer visits1MonthAgo
+        @JsonProperty("visits_3_week_ago")
+        Integer visits3WeekAgo,
+
+        @JsonProperty("visits_2_week_ago")
+        Integer visits2WeekAgo,
+
+        @JsonProperty("visits_1_week_ago")
+        Integer visits1WeekAgo
 ) {
 }

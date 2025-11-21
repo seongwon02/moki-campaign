@@ -1,9 +1,7 @@
-package com.example.moki_campaign.customer.service;
+package com.example.moki_campaign.customer;
 
-import com.example.moki_campaign.domain.customer.dto.response.AnalyticsReponseDto;
 import com.example.moki_campaign.domain.customer.dto.response.CustomerDetailResponseDto;
 import com.example.moki_campaign.domain.customer.dto.response.CustomerListResponseDto;
-import com.example.moki_campaign.domain.customer.dto.response.CustomerSummaryDto;
 import com.example.moki_campaign.domain.customer.dto.response.DeclinedLoyalSummaryResponseDto;
 import com.example.moki_campaign.domain.customer.dto.response.VisitGraphItemDto;
 import com.example.moki_campaign.domain.customer.dto.response.VisitGraphResponseDto;
@@ -137,11 +135,13 @@ public class CustomerServiceImplTest {
         Store store = mock(Store.class);
         Customer customer = mock(Customer.class);
         when(customer.getId()).thenReturn(1L);
+        when(customer.getTotalAmount()).thenReturn(50000);
+        when(customer.getTotalVisitCount()).thenReturn(1);
+        when(customer.getLastVisitDate()).thenReturn(LocalDate.now().minusWeeks(1));
 
         DailyVisit visit = mock(DailyVisit.class);
         when(visit.getCustomer()).thenReturn(customer);
-        when(visit.getAmount()).thenReturn(50000);
-        when(visit.getVisitDate()).thenReturn(LocalDate.now().minusMonths(1));
+        when(visit.getVisitDate()).thenReturn(LocalDate.now().minusWeeks(1));
 
         AiCustomerDataOutputDto aiOutput = new AiCustomerDataOutputDto("1", "LOYAL", 0.958);
         AiCustomerDataResponseDto aiResponse = new AiCustomerDataResponseDto(List.of(aiOutput));
@@ -165,13 +165,12 @@ public class CustomerServiceImplTest {
         assertEquals(50000.0, inputDto.amount());
         assertEquals(1, inputDto.totalVisits());
 
-        YearMonth endMonth = YearMonth.now().minusMonths(1);
-        if (YearMonth.from(visit.getVisitDate()).equals(endMonth)) {
-            assertEquals(1, inputDto.visits1MonthAgo());
-        } else if (YearMonth.from(visit.getVisitDate()).equals(endMonth.minusMonths(1))) {
-            assertEquals(1, inputDto.visits2MonthAgo());
-        }
-
+        // 주별 데이터 검증 - 최소한 하나의 주에 방문 기록이 있어야 함
+        int totalVisitsInWeeks = inputDto.visits1WeekAgo() + inputDto.visits2WeekAgo() +
+                                  inputDto.visits3WeekAgo() + inputDto.visits4WeekAgo() +
+                                  inputDto.visits5WeekAgo() + inputDto.visits6WeekAgo() +
+                                  inputDto.visits7WeekAgo() + inputDto.visits8WeekAgo();
+        assertThat(totalVisitsInWeeks).isGreaterThanOrEqualTo(1);
 
         ArgumentCaptor<Long> idCaptor = ArgumentCaptor.forClass(Long.class);
         ArgumentCaptor<CustomerSegment> segmentCaptor = ArgumentCaptor.forClass(CustomerSegment.class);
@@ -208,6 +207,11 @@ public class CustomerServiceImplTest {
         // Given
         Store store = mock(Store.class);
         Customer customer = mock(Customer.class);
+        when(customer.getId()).thenReturn(1L);
+        when(customer.getTotalAmount()).thenReturn(50000);
+        when(customer.getTotalVisitCount()).thenReturn(1);
+        when(customer.getLastVisitDate()).thenReturn(LocalDate.now().minusWeeks(1));
+
         when(customerRepository.findAllByStore(store)).thenReturn(List.of(customer));
         when(dailyVisitRepository.findByStoreAndDateRangeWithCustomer(any(), any(), any())).thenReturn(List.of());
 
@@ -227,6 +231,11 @@ public class CustomerServiceImplTest {
         // Given
         Store store = mock(Store.class);
         Customer customer = mock(Customer.class);
+        when(customer.getId()).thenReturn(1L);
+        when(customer.getTotalAmount()).thenReturn(50000);
+        when(customer.getTotalVisitCount()).thenReturn(1);
+        when(customer.getLastVisitDate()).thenReturn(LocalDate.now().minusWeeks(1));
+
         when(customerRepository.findAllByStore(store)).thenReturn(List.of(customer));
         when(dailyVisitRepository.findByStoreAndDateRangeWithCustomer(any(), any(), any())).thenReturn(List.of());
 

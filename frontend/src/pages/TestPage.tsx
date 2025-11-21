@@ -1,4 +1,4 @@
-import { useState, useRef } from "react"; // useRef 추가
+import { useState } from "react";
 import Input from "../components/common/Input";
 import Button from "../components/common/Button"; // Button 컴포넌트 임포트
 
@@ -9,9 +9,6 @@ const TestPage = () => {
   const [textValue, setTextValue] = useState("");
   const [passwordValue, setPasswordValue] = useState("");
   const [isLoading, setIsLoading] = useState(false);
-
-  // Input 컴포넌트의 Ref 테스트를 위한 Ref 객체
-  const inputRef = useRef<HTMLInputElement>(null);
 
   // 로딩 상태를 토글하는 핸들러
   const handleLoadingToggle = () => {

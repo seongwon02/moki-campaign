@@ -1,5 +1,5 @@
 import axios, { type AxiosInstance } from "axios";
-import { type Customer, type CustomerDetail, type Analytics } from "../types/customerTypes.ts";
+import { type Customer, type CustomerDetail } from "../types/customerTypes.ts";
 
 const API_BASE_URL =
   import.meta.env.VITE_API_BASE_URL || "http://localhost:8080/api";

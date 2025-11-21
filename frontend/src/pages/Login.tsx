@@ -5,6 +5,7 @@ import { loginUser, resetStatus } from "../store/authSlice.ts";
 import { type AppDispatch, type RootState } from "../store/index.ts";
 import Input from "../components/common/Input.tsx";
 import Button from "../components/common/Button.tsx";
+import mokiLogo from "../assets/moki_logo.svg";
 
 /**
  * 로그인 페이지 컴포넌트
@@ -69,7 +70,7 @@ const LoginPage: React.FC = () => {
         <div className="flex flex-col items-center justify-center space-y-2 pb-4">
           {/* 이미지 로고: W-200, H-100 크기 스타일을 추가했습니다. */}
           <img
-            src="/src/assets/moki_logo.svg"
+            src={mokiLogo}
             alt="앱 로고"
             className="w-200 h-100"
           />

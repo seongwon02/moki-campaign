@@ -80,7 +80,10 @@ public class SecurityConfig {
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration configuration = new CorsConfiguration();
-        configuration.setAllowedOriginPatterns(List.of("*")); // 개발 환경: 모든 origin 허용
+        configuration.setAllowedOriginPatterns(List.of(
+                "http://localhost:5173",
+                "https://moki-campaign-frontend.vercel.app"
+        )); // vercel 배포 주소와 로컬 개발 주소 허용
         configuration.setAllowedMethods(List.of("GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"));
         configuration.setAllowedHeaders(List.of("*"));
         configuration.setAllowCredentials(true);

@@ -29,31 +29,19 @@ const CustomerInfo: React.FC = () => {
   const navigate = useNavigate();
   const { customerId } = useParams<{ customerId: string }>();
   const [customerData, setCustomerData] = useState<CustomerDetail | null>(null);
-  const [isLoading, setIsLoading] = useState(true); // New state
-  const [error, setError] = useState<string | null>(null); // New state
 
   useEffect(() => {
     const fetchCustomerDetails = async () => {
       if (!customerId) {
-        setError("고객 ID가 제공되지 않았습니다.");
-        setIsLoading(false);
+        console.error("고객 ID가 제공되지 않았습니다.");
         return;
       }
 
-      setIsLoading(true);
-      setError(null);
       try {
         const data = await getCustomerDetail(Number(customerId)); // Call the API
         setCustomerData(data);
       } catch (err) {
-        const errorMessage =
-          err instanceof Error
-            ? err.message
-            : "알 수 없는 오류가 발생했습니다.";
-        setError(errorMessage);
         console.error("고객 상세 정보 불러오기 실패:", err);
-      } finally {
-        setIsLoading(false);
       }
     };
 

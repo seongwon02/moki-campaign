@@ -241,7 +241,7 @@ const MainDashboard: React.FC = () => {
         {/* Section 2: Decreased Visit Customer Management */}
         <div className="bg-white xl p-6 mb-0.5">
           <h2 className="text-lg font-bold text-black mb-4">
-            방문 감소 충성 고객
+            방문 감소 단골 고객
           </h2>
           {isLoading ? (
             <p className="text-xs text-gray-700 mb-4">
@@ -298,7 +298,7 @@ const MainDashboard: React.FC = () => {
               variant={activeList === "loyal" ? "primary" : "secondary"}
               className="flex-grow rounded-none border-r border-gray-300"
             >
-              충성 고객
+              단골 고객
             </Button>
             <Button
               onClick={() => handleActiveListChange("churn")}

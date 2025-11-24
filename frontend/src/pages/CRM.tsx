@@ -116,7 +116,7 @@ const CRM: React.FC = () => {
               variant={activeList === "loyal" ? "primary" : "secondary"}
               className="flex-grow rounded-none border-r border-gray-300"
             >
-              충성 고객
+              단골 고객
             </Button>
             <Button
               onClick={() => handleListChange("churn")}

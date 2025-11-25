@@ -6,11 +6,7 @@ import type { Customer } from "../types/customerTypes";
 import CustomerList from "../components/common/CustomerList";
 import { getDeclineCustomers } from "../services/atRiskLoyalApi";
 import { getCustomers } from "../services/crmApi";
-import { Chart as ChartJS, ArcElement, Tooltip, Legend } from "chart.js";
-import { Doughnut } from "react-chartjs-2";
-
-ChartJS.register(ArcElement, Tooltip, Legend);
-
+import ReversedGaugeChart from "../components/common/ReversedGaugeChart";
 
 // NOTE: The structure of the response from getDeclineCustomers is assumed here.
 interface DeclineStats {
@@ -77,6 +73,8 @@ const RiskLoyal: React.FC = () => {
     }
   };
 
+  const declineRate = stats?.decline_customer_rate ?? 0;
+
   if (loading) {
     return (
       <div className="flex justify-center items-center h-screen">
@@ -121,38 +119,7 @@ const RiskLoyal: React.FC = () => {
             이탈 위험 단골 고객 비율
           </p>
           <div className="relative w-48 h-48 flex items-center justify-center">
-            <Doughnut
-              data={{
-                labels: ["이탈 위험", "정상"],
-                datasets: [
-                  {
-                    data: [
-                      stats?.decline_customer_rate ?? 0,
-                      100 - (stats?.decline_customer_rate ?? 0),
-                    ],
-                    backgroundColor: ["#FF6384", "#DDDDDD"],
-                    hoverBackgroundColor: ["#FF6384", "#DDDDDD"],
-                    borderWidth: 0,
-                  },
-                ],
-              }}
-              options={{
-                rotation: 270, // Start from the bottom
-                circumference: 180, // Half circle
-                cutout: "70%",
-                plugins: {
-                  tooltip: {
-                    enabled: false,
-                  },
-                  legend: {
-                    display: false,
-                  },
-                },
-              }}
-            />
-            <div className="absolute top-1/2 left-1/2 -translate-x-1/2 translate-y-2 text-3xl font-bold text-[#4A7CE9]">
-              {stats?.decline_customer_rate ?? 0}%
-            </div>
+            <ReversedGaugeChart value={declineRate} />
           </div>
         </div>
         {/* Section 2: 이탈 위험 단골 고객 리스트 */}

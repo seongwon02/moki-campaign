@@ -6,6 +6,11 @@ import type { Customer } from "../types/customerTypes";
 import CustomerList from "../components/common/CustomerList";
 import { getDeclineCustomers } from "../services/atRiskLoyalApi";
 import { getCustomers } from "../services/crmApi";
+import { Chart as ChartJS, ArcElement, Tooltip, Legend } from "chart.js";
+import { Doughnut } from "react-chartjs-2";
+
+ChartJS.register(ArcElement, Tooltip, Legend);
+
 
 // NOTE: The structure of the response from getDeclineCustomers is assumed here.
 interface DeclineStats {
@@ -111,24 +116,43 @@ const RiskLoyal: React.FC = () => {
       {/* Scrollable Content */}
       <div className="w-full max-w-md overflow-y-auto hide-scrollbar">
         {/* Section 1: 단골 고객 이탈 정보 표기 */}
-        <div className="bg-white xl p-6 mb-0.5 flex space-x-4">
-          <div className="w-1/2">
-            {/* Left Section */}
-            <p className="text-black font-bold text-base">
-              단골 고객 중 방문 감소
-            </p>
-            <p className="text-[#4A7CE9] font-bold text-3xl">
-              {stats?.decline_customer_count ?? 0}명
-            </p>
-          </div>
-          <div className="w-1/2">
-            {/* Right Section */}
-            <p className="text-black font-bold text-base">
-              이탈 위험 단골 고객 비율
-            </p>
-            <p className="text-[#4A7CE9] font-bold text-3xl">
+        <div className="bg-white xl p-6 mb-0.5 flex flex-col items-center">
+          <p className="text-black font-bold text-base mb-4">
+            이탈 위험 단골 고객 비율
+          </p>
+          <div className="relative w-48 h-48 flex items-center justify-center">
+            <Doughnut
+              data={{
+                labels: ["이탈 위험", "정상"],
+                datasets: [
+                  {
+                    data: [
+                      stats?.decline_customer_rate ?? 0,
+                      100 - (stats?.decline_customer_rate ?? 0),
+                    ],
+                    backgroundColor: ["#FF6384", "#DDDDDD"],
+                    hoverBackgroundColor: ["#FF6384", "#DDDDDD"],
+                    borderWidth: 0,
+                  },
+                ],
+              }}
+              options={{
+                rotation: 270, // Start from the bottom
+                circumference: 180, // Half circle
+                cutout: "70%",
+                plugins: {
+                  tooltip: {
+                    enabled: false,
+                  },
+                  legend: {
+                    display: false,
+                  },
+                },
+              }}
+            />
+            <div className="absolute top-1/2 left-1/2 -translate-x-1/2 translate-y-2 text-3xl font-bold text-[#4A7CE9]">
               {stats?.decline_customer_rate ?? 0}%
-            </p>
+            </div>
           </div>
         </div>
         {/* Section 2: 이탈 위험 단골 고객 리스트 */}

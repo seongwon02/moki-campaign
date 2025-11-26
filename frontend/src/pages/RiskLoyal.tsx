@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import Button from "../components/common/Button";
 import backIcon from "../assets/icons/back.svg";
+import churnIcon from "../assets/icons/churn.svg";
 import type { Customer } from "../types/customerTypes";
 import CustomerList from "../components/common/CustomerList";
 import { getDeclineCustomers } from "../services/atRiskLoyalApi";
@@ -114,11 +115,22 @@ const RiskLoyal: React.FC = () => {
       {/* Scrollable Content */}
       <div className="w-full max-w-md overflow-y-auto hide-scrollbar">
         {/* Section 1: 단골 고객 이탈 정보 표기 */}
-        <div className="bg-white xl p-6 mb-0.5 flex flex-col items-center">
-          <p className="text-black font-bold text-base mb-4">
-            이탈 위험 단골 고객 비율
-          </p>
-          <div className="relative w-48 h-48 flex items-center justify-center">
+        <div className="bg-white xl p-6 mb-0.5 flex justify-between items-center">
+          {/* Left Half: Churn Count and Target Rate */}
+          <div className="w-1/2 flex flex-col items-center justify-center h-full">
+            <div className="flex items-center mb-2">
+              <img src={churnIcon} alt="이탈 아이콘" className="w-6 h-6 mr-2" />
+              <p className="text-black text-lg font-semibold">이탈 위험 고객</p>
+            </div>
+            <p className="text-black text-3xl font-bold">
+              <span className="text-[#FF0000]">
+                {stats?.decline_customer_count ?? 0}
+              </span>
+              명
+            </p>
+          </div>
+          {/* Right Half: Chart */}
+          <div className="w-1/2 flex flex-col items-center justify-center">
             <ReversedGaugeChart value={declineRate} />
           </div>
         </div>

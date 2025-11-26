@@ -2,7 +2,9 @@ import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import Button from "../components/common/Button";
 import backIcon from "../assets/icons/back.svg";
-import churnIcon from "../assets/icons/churn.svg";
+import churnIconGreen from "../assets/icons/churn_green.svg";
+import churnIconYellow from "../assets/icons/churn_yellow.svg";
+import churnIconRed from "../assets/icons/churn_red.svg";
 import type { Customer } from "../types/customerTypes";
 import CustomerList from "../components/common/CustomerList";
 import { getDeclineCustomers } from "../services/atRiskLoyalApi";
@@ -76,6 +78,30 @@ const RiskLoyal: React.FC = () => {
 
   const declineRate = stats?.decline_customer_rate ?? 0;
 
+  const getChurnIndicatorColor = (rate: number): string => {
+    if (rate <= 50) {
+      return "text-[#34D399]"; // Green (matches chart's green)
+    } else if (rate <= 75) {
+      return "text-[#FBBF24]"; // Yellow (matches chart's yellow)
+    } else {
+      return "text-[#F87171]"; // Red (matches chart's red)
+    }
+  };
+
+  const indicatorColor = getChurnIndicatorColor(declineRate);
+
+  const getChurnIconColor = (rate: number): string => {
+    if (rate <= 50) {
+      return churnIconGreen;
+    } else if (rate <= 75) {
+      return churnIconYellow;
+    } else {
+      return churnIconRed;
+    }
+  };
+
+  const churnIconColor = getChurnIconColor(declineRate);
+
   if (loading) {
     return (
       <div className="flex justify-center items-center h-screen">
@@ -116,14 +142,18 @@ const RiskLoyal: React.FC = () => {
       <div className="w-full max-w-md overflow-y-auto hide-scrollbar">
         {/* Section 1: 단골 고객 이탈 정보 표기 */}
         <div className="bg-white xl p-6 mb-0.5 flex justify-between items-center">
-          {/* Left Half: Churn Count and Target Rate */}
+          {/* Left Half: Churn Count */}
           <div className="w-1/2 flex flex-col items-center justify-center h-full">
             <div className="flex items-center mb-2">
-              <img src={churnIcon} alt="이탈 아이콘" className="w-6 h-6 mr-2" />
-              <p className="text-black text-lg font-semibold">이탈 위험 고객</p>
+              <img
+                src={churnIconColor}
+                alt="이탈 아이콘"
+                className="w-6 h-6 mr-2"
+              />
+              <p className="text-lg font-semibold">이탈 위험 고객</p>
             </div>
-            <p className="text-black text-3xl font-bold">
-              <span className="text-[#FF0000]">
+            <p className="text-4xl font-bold">
+              <span className={indicatorColor}>
                 {stats?.decline_customer_count ?? 0}
               </span>
               명

@@ -2,10 +2,14 @@ import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import Button from "../components/common/Button";
 import backIcon from "../assets/icons/back.svg";
+import churnIconGreen from "../assets/icons/churn_green.svg";
+import churnIconYellow from "../assets/icons/churn_yellow.svg";
+import churnIconRed from "../assets/icons/churn_red.svg";
 import type { Customer } from "../types/customerTypes";
 import CustomerList from "../components/common/CustomerList";
 import { getDeclineCustomers } from "../services/atRiskLoyalApi";
 import { getCustomers } from "../services/crmApi";
+import ReversedGaugeChart from "../components/common/ReversedGaugeChart";
 
 // NOTE: The structure of the response from getDeclineCustomers is assumed here.
 interface DeclineStats {
@@ -72,6 +76,32 @@ const RiskLoyal: React.FC = () => {
     }
   };
 
+  const declineRate = stats?.decline_customer_rate ?? 0;
+
+  const getChurnIndicatorColor = (rate: number): string => {
+    if (rate <= 10) {
+      return "text-[#34D399]"; // Green (matches chart's green)
+    } else if (rate <= 30) {
+      return "text-[#FBBF24]"; // Yellow (matches chart's yellow)
+    } else {
+      return "text-[#F87171]"; // Red (matches chart's red)
+    }
+  };
+
+  const indicatorColor = getChurnIndicatorColor(declineRate);
+
+  const getChurnIconColor = (rate: number): string => {
+    if (rate <= 10) {
+      return churnIconGreen;
+    } else if (rate <= 30) {
+      return churnIconYellow;
+    } else {
+      return churnIconRed;
+    }
+  };
+
+  const churnIconColor = getChurnIconColor(declineRate);
+
   if (loading) {
     return (
       <div className="flex justify-center items-center h-screen">
@@ -111,24 +141,27 @@ const RiskLoyal: React.FC = () => {
       {/* Scrollable Content */}
       <div className="w-full max-w-md overflow-y-auto hide-scrollbar">
         {/* Section 1: 단골 고객 이탈 정보 표기 */}
-        <div className="bg-white xl p-6 mb-0.5 flex space-x-4">
-          <div className="w-1/2">
-            {/* Left Section */}
-            <p className="text-black font-bold text-base">
-              단골 고객 중 방문 감소
-            </p>
-            <p className="text-[#4A7CE9] font-bold text-3xl">
-              {stats?.decline_customer_count ?? 0}명
+        <div className="bg-white xl p-6 mb-0.5 flex justify-between items-center">
+          {/* Left Half: Churn Count */}
+          <div className="w-1/2 flex flex-col items-center justify-center h-full">
+            <div className="flex items-center mb-2">
+              <img
+                src={churnIconColor}
+                alt="이탈 아이콘"
+                className="w-8 h-8 mr-2"
+              />
+              <p className="text-lg font-semibold">이탈 위험 고객</p>
+            </div>
+            <p className="text-4xl font-bold">
+              <span className={indicatorColor}>
+                {stats?.decline_customer_count ?? 0}
+              </span>
+              명
             </p>
           </div>
-          <div className="w-1/2">
-            {/* Right Section */}
-            <p className="text-black font-bold text-base">
-              이탈 위험 단골 고객 비율
-            </p>
-            <p className="text-[#4A7CE9] font-bold text-3xl">
-              {stats?.decline_customer_rate ?? 0}%
-            </p>
+          {/* Right Half: Chart */}
+          <div className="w-1/2 flex flex-col items-center justify-center">
+            <ReversedGaugeChart value={declineRate} />
           </div>
         </div>
         {/* Section 2: 이탈 위험 단골 고객 리스트 */}

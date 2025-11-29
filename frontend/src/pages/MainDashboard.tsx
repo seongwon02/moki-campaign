@@ -6,6 +6,10 @@ import moneyIcon from "../assets/icons/money.svg";
 import groupIcon from "../assets/icons/group.svg";
 import revisitIcon from "../assets/icons/revisit.svg";
 import settingIcon from "../assets/icons/setting.svg";
+import churnLoyal from "../assets/icons/churn_loyal.svg";
+import churnLoyalDanger from "../assets/icons/churn_loyal_danger.svg";
+import churnLoyalPercent from "../assets/icons/churn_loyal_percent.svg";
+import churnLoyalPercentDanger from "../assets/icons/churn_loyal_percent_danger.svg";
 import type { Customer } from "../types/customerTypes.ts";
 import CustomerList from "../components/common/CustomerList.tsx";
 import { getCustomers } from "../services/crmApi.ts";
@@ -96,6 +100,28 @@ const MainDashboard: React.FC = () => {
 
     fetchData();
   }, []);
+
+  const declineRate = atRiskData?.decline_ratio ?? 0;
+
+  const getChurnIndicatorColor = (rate: number): string => {
+    if (rate <= 10) {
+      return "font-bold text-xl text-[#34D399]"; // Green (matches chart's green)
+    } else {
+      return "font-bold text-xl text-[#F87171]"; // Red (matches chart's red)
+    }
+  };
+
+  const indicatorColor = getChurnIndicatorColor(declineRate);
+
+  const getChurnIconColor = (rate: number): [string, string] => {
+    if (rate <= 10) {
+      return [churnLoyal, churnLoyalPercent];
+    } else {
+      return [churnLoyalDanger, churnLoyalPercentDanger];
+    }
+  };
+
+  const churnIconColor = getChurnIconColor(declineRate);
 
   const handleActiveListChange = (listType: "all" | "loyal" | "churn") => {
     setActiveList(listType);
@@ -253,22 +279,39 @@ const MainDashboard: React.FC = () => {
             </p>
           ) : (
             atRiskData && (
-              <>
-                <p className="text-xs text-gray-700 mb-2">
-                  단골 고객 중{" "}
-                  <span className="text-[#4A7CE9]">
-                    {atRiskData.decline_count}명
-                  </span>
-                  의 방문 횟수가 감소하고 있습니다
-                </p>
-                <p className="text-xs text-gray-700 mb-4">
-                  현재 단골 고객 중 이탈 위험 고객의 비율은{" "}
-                  <span className="text-[#4A7CE9]">
-                    {atRiskData.decline_ratio}%
-                  </span>
-                  입니다
-                </p>
-              </>
+              <div className="flex justify-between mb-4">
+                {/* 좌측: 방문 감소 고객 수 - space-x-1로 간격 최소화 */}
+                <div className="flex items-center">
+                  {/* 아이콘 크기 유지 */}
+                  <img src={churnIconColor[0]} className="w-10 h-10 mr-2"></img>
+                  <div className="ml-1">
+                    {/* 설명 폰트 크기 키움: text-xs -> text-sm */}
+                    <p className="text-sm text-black font-semibold">
+                      방문 감소 고객
+                    </p>
+                    {/* 데이터 폰트 크기 키움: text-lg -> text-xl */}
+                    <span className={indicatorColor}>
+                      {atRiskData.decline_count}명
+                    </span>
+                  </div>
+                </div>
+
+                {/* 우측: 이탈 위험 비율 - space-x-1로 간격 최소화 */}
+                <div className="flex items-center">
+                  {/* 아이콘 크기 유지 */}
+                  <img src={churnIconColor[1]} className="w-10 h-10 mr-2"></img>
+                  <div className="ml-1">
+                    {/* 설명 폰트 크기 키움: text-xs -> text-sm */}
+                    <p className="text-sm text-black font-semibold">
+                      이탈 위험 비율
+                    </p>
+                    {/* 데이터 폰트 크기 키움: text-lg -> text-xl */}
+                    <span className={indicatorColor}>
+                      {atRiskData.decline_ratio}%
+                    </span>
+                  </div>
+                </div>
+              </div>
             )
           )}
           <CustomerList customers={atRiskLoyalCustomers} />

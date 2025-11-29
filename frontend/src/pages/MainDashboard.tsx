@@ -15,7 +15,6 @@ import CustomerList from "../components/common/CustomerList.tsx";
 import { getCustomers } from "../services/crmApi.ts";
 import { getWeeklySummary } from "../services/weeklySummaryApi.ts";
 import { getDeclineCustomers } from "../services/atRiskLoyalApi.ts";
-import type { Tuple } from "@reduxjs/toolkit";
 
 // API 응답 데이터 타입 정의
 interface WeeklySummaryData {

@@ -117,14 +117,14 @@ const ReversedGaugeChart: React.FC<ReversedGaugeChartProps> = ({ value }) => {
       <svg className="w-full h-full" viewBox="0 0 200 160">
         {/* --- 배경 세그먼트 (색상 반전 로직: 초록 -> 노랑 -> 빨강) --- 
             전체 범위: -135도 ~ 135도 (총 270도)
-            1. Good (0~50%): -135 ~ 0도 (135도 구간)
-            2. Warning (50~75%): 0 ~ 67.5도 (67.5도 구간)
-            3. Risk (75~100%): 67.5 ~ 135도 (67.5도 구간)
+            1. Good (0~10%): -135 ~ 0도 (135도 구간)
+            2. Warning (10~30%): 0 ~ 67.5도 (67.5도 구간)
+            3. Risk (30~100%): 67.5 ~ 135도 (67.5도 구간)
         */}
 
-        {/* 1. Good/Safe Zone (0% ~ 50%): Green */}
+        {/* 1. Good/Safe Zone (0% ~ 10%): Green */}
         <path
-          d={describeArc(cx, cy, radius, -135, -2)} // 0도 직전까지
+          d={describeArc(cx, cy, radius, -135, -110)} // -108도 직전까지
           fill="none"
           stroke="#34D399" // Tailwind green-400
           strokeWidth={strokeWidth}
@@ -133,7 +133,7 @@ const ReversedGaugeChart: React.FC<ReversedGaugeChartProps> = ({ value }) => {
 
         {/* 2. Warning Zone (50% ~ 75%): Yellow */}
         <path
-          d={describeArc(cx, cy, radius, 2, 65.5)} // 0도 직후 ~ 67.5도 직전
+          d={describeArc(cx, cy, radius, -106, -56)} // -108도 직후 ~ -54도 직전
           fill="none"
           stroke="#FBBF24" // Tailwind amber-400
           strokeWidth={strokeWidth}
@@ -142,7 +142,7 @@ const ReversedGaugeChart: React.FC<ReversedGaugeChartProps> = ({ value }) => {
 
         {/* 3. Risk Zone (75% ~ 100%): Red */}
         <path
-          d={describeArc(cx, cy, radius, 69.5, 135)} // 67.5도 직후 ~ 135도
+          d={describeArc(cx, cy, radius, -52, 135)} // -54도 직후 ~ 135도
           fill="none"
           stroke="#F87171" // Tailwind red-400
           strokeWidth={strokeWidth}

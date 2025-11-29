@@ -79,9 +79,9 @@ const RiskLoyal: React.FC = () => {
   const declineRate = stats?.decline_customer_rate ?? 0;
 
   const getChurnIndicatorColor = (rate: number): string => {
-    if (rate <= 50) {
+    if (rate <= 10) {
       return "text-[#34D399]"; // Green (matches chart's green)
-    } else if (rate <= 75) {
+    } else if (rate <= 30) {
       return "text-[#FBBF24]"; // Yellow (matches chart's yellow)
     } else {
       return "text-[#F87171]"; // Red (matches chart's red)
@@ -91,9 +91,9 @@ const RiskLoyal: React.FC = () => {
   const indicatorColor = getChurnIndicatorColor(declineRate);
 
   const getChurnIconColor = (rate: number): string => {
-    if (rate <= 50) {
+    if (rate <= 10) {
       return churnIconGreen;
-    } else if (rate <= 75) {
+    } else if (rate <= 30) {
       return churnIconYellow;
     } else {
       return churnIconRed;
@@ -148,7 +148,7 @@ const RiskLoyal: React.FC = () => {
               <img
                 src={churnIconColor}
                 alt="이탈 아이콘"
-                className="w-6 h-6 mr-2"
+                className="w-8 h-8 mr-2"
               />
               <p className="text-lg font-semibold">이탈 위험 고객</p>
             </div>

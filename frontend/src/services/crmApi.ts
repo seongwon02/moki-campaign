@@ -1,5 +1,9 @@
 import axios, { type AxiosInstance } from "axios";
-import { type Customer, type CustomerDetail } from "../types/customerTypes.ts";
+import {
+  type Customer,
+  type CustomerDetail,
+  type Graph,
+} from "../types/customerTypes.ts";
 
 const API_BASE_URL =
   import.meta.env.VITE_API_BASE_URL || "http://localhost:8080/api";
@@ -80,6 +84,36 @@ export const getCustomerDetail = async (
     if (axios.isAxiosError(error) && error.response) {
       const serverMessage =
         error.response.data.message || "고객 상세 정보 서버 오류";
+      throw new Error(serverMessage);
+    }
+    throw new Error("네트워크 연결 또는 서버 응답에 문제가 발생했습니다.");
+  }
+};
+
+export const getCustomerDetailGraph = async (
+  customerId: number,
+  period: string
+): Promise<Graph[]> => {
+  try {
+    const token = localStorage.getItem("authToken");
+
+    if (!token) {
+      throw new Error("인증 토큰이 없습니다. 다시 로그인해주세요.");
+    }
+
+    const response = await api.get(`/stores/customers/${customerId}/graph`, {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+      params: {
+        period: period,
+      },
+    });
+    return response.data.graph;
+  } catch (error) {
+    if (axios.isAxiosError(error) && error.response) {
+      const serverMessage =
+        error.response.data.message || "고객 방문 빈도 그래프 오류";
       throw new Error(serverMessage);
     }
     throw new Error("네트워크 연결 또는 서버 응답에 문제가 발생했습니다.");

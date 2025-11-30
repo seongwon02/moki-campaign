@@ -90,34 +90,57 @@ React 컴포넌트의 모범 사례 및 잠재적 오류를 탐지하기 위해 
 
 ```
 frontend/
-├── node_modules/             # 프로젝트 종속성
+├── node_modules/           # 프로젝트 종속성
 ├── public/
-│   └── index.html            # HTML 진입점
+│   └── index.html          # HTML 진입점
 ├── src/
-│   ├── assets/               # 이미지, 폰트 등 정적 리소스
-│   ├── components/           # 재사용 가능한 UI 컴포넌트 집합
-│   │   ├── common/           # Button, Input 등 범용 (Atomic) 컴포넌트
-│   │   ├── layout/           # Header, Sidebar, Footer 등 앱 구조 컴포넌트
-│   │   └── modules/          # 페이지별 복합 컴포넌트
-│   ├── hooks/                # 커스텀 훅
-│   ├── pages/                # 라우팅되는 페이지 컴포넌트
-│   ├── services/             # API 통신 로직 및 정의
-│   ├── store/                # 상태 관리 (Redux slice 등)
-│   ├── types/                # TypeScript 타입 정의 파일
-│   ├── utils/                # 유틸리티 함수
-│   ├── App.css               # 앱 전역 스타일
-│   ├── App.tsx               # 메인 앱 컴포넌트 및 라우팅 설정
-│   ├── index.css             # 루트 인덱스 스타일
-│   └── main.tsx              # 애플리케이션 진입점 (DOM 렌더링)
-├── .gitignore                # Git 추적 제외 파일 목록
-├── eslint.config.js          # ESLint 설정 파일
-├── package-lock.json         # NPM 종속성 잠금 파일
-├── package.json              # 프로젝트 종속성 및 스크립트 정의
-├── postcss.config.js         # PostCSS 설정 (TailwindCSS 전처리)
-├── README.md                 # 현재 문서
-├── tailwind.config.js        # Tailwind CSS 설정 파일
-├── tsconfig.app.json         # 애플리케이션 코드용 TypeScript 설정
-├── tsconfig.json             # 기본 TypeScript 설정
-├── tsconfig.node.json        # Node 환경용 TypeScript 설정
-└── vite.config.ts            # Vite 빌드 도구 설정 파일
+│   ├── assets/             # 이미지, 폰트 등 정적 리소스
+│   │   ├── icons/          # 아이콘 리소스 (SVG 등)
+│   │   ├── moki_logo.png
+│   │   └── moki_logo.svg
+│   ├── components/         # 재사용 가능한 UI 컴포넌트 집합
+│   │   ├── common/         # Button, Input 등 범용 (Atomic) 컴포넌트
+│   │   │   ├── Button.tsx
+│   │   │   ├── CustomerList.tsx
+│   │   │   ├── Input.tsx
+│   │   │   ├── PrivateRoute.tsx
+│   │   │   └── ReversedGaugeChart.tsx
+│   │   └── icons/          # 컴포넌트용 아이콘
+│   ├── pages/              # 라우팅되는 페이지 컴포넌트
+│   │   ├── CRM.tsx
+│   │   ├── CustomerInfo.tsx
+│   │   ├── Login.tsx
+│   │   ├── MainDashboard.tsx
+│   │   ├── RiskLoyal.tsx
+│   │   ├── Settings.tsx
+│   │   └── TestPage.tsx
+│   ├── services/           # API 통신 로직 및 정의
+│   │   ├── atRiskLoyalApi.ts
+│   │   ├── authApi.ts
+│   │   ├── crmApi.ts
+│   │   └── weeklySummaryApi.ts
+│   ├── store/              # 상태 관리 (Redux slice 등)
+│   │   ├── authSlice.ts
+│   │   └── index.ts
+│   ├── types/              # TypeScript 타입 정의 파일
+│   │   ├── authTypes.ts
+│   │   └── customerTypes.ts
+│   ├── utils/              # 유틸리티 함수
+│   │   └── dateUtils.ts
+│   ├── App.css             # 앱 전역 스타일
+│   ├── App.tsx             # 메인 앱 컴포넌트 및 라우팅 설정
+│   ├── index.css           # 루트 인덱스 스타일
+│   └── main.tsx            # 애플리케이션 진입점 (DOM 렌더링)
+├── .gitignore              # Git 추적 제외 파일 목록
+├── eslint.config.js        # ESLint 설정 파일
+├── package-lock.json       # NPM 종속성 잠금 파일
+├── package.json            # 프로젝트 종속성 및 스크립트 정의
+├── postcss.config.js       # PostCSS 설정 (TailwindCSS 전처리)
+├── README.md               # 현재 문서
+├── tailwind.config.js      # Tailwind CSS 설정 파일
+├── tsconfig.app.json       # 애플리케이션 코드용 TypeScript 설정
+├── tsconfig.json           # 기본 TypeScript 설정
+├── tsconfig.node.json      # Node 환경용 TypeScript 설정
+├── vercel.json             # Vercel 배포 설정
+└── vite.config.ts          # Vite 빌드 도구 설정 파일
 ```

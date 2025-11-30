@@ -6,11 +6,6 @@ export interface Customer {
   loyalty_score: number;
 }
 
-export interface Analytics {
-  month: string;
-  count: number;
-}
-
 export interface CustomerDetail {
   customer_id: number;
   name: string;
@@ -22,5 +17,10 @@ export interface CustomerDetail {
   current_points: number;
   total_visit_count: number;
   visit_day_ago: number;
-  analytics: Analytics[];
+  analytics?: { month: string; count: number }[];
+}
+
+export interface Graph {
+  label: string;
+  count: number;
 }

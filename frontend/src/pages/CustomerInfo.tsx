@@ -2,9 +2,13 @@ import React, { useState, useEffect } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import Button from "../components/common/Button";
 import backIcon from "../assets/icons/back.svg";
-import type { CustomerDetail } from "../types/customerTypes";
-import { calculateLastVisitDate, formatPhoneNumber } from "../utils/dateUtils";
-import { getCustomerDetail } from "../services/crmApi"; // New import
+import type { CustomerDetail, Graph } from "../types/customerTypes";
+import {
+  calculateLastVisitDate,
+  formatPhoneNumber,
+  formatChartLabel,
+} from "../utils/dateUtils";
+import { getCustomerDetail, getCustomerDetailGraph } from "../services/crmApi";
 import {
   Chart as ChartJS,
   CategoryScale,
@@ -29,6 +33,10 @@ const CustomerInfo: React.FC = () => {
   const navigate = useNavigate();
   const { customerId } = useParams<{ customerId: string }>();
   const [customerData, setCustomerData] = useState<CustomerDetail | null>(null);
+  const [customerGraphData, setCustomerGraphData] = useState<Graph[] | null>(
+    null
+  );
+  const [period, setPeriod] = useState<"month" | "week">("week");
 
   useEffect(() => {
     const fetchCustomerDetails = async () => {
@@ -38,7 +46,7 @@ const CustomerInfo: React.FC = () => {
       }
 
       try {
-        const data = await getCustomerDetail(Number(customerId)); // Call the API
+        const data = await getCustomerDetail(Number(customerId));
         setCustomerData(data);
       } catch (err) {
         console.error("고객 상세 정보 불러오기 실패:", err);
@@ -47,6 +55,25 @@ const CustomerInfo: React.FC = () => {
 
     fetchCustomerDetails();
   }, [customerId]);
+
+  useEffect(() => {
+    const fetchGraphData = async () => {
+      if (!customerId) return;
+
+      try {
+        const graphData = await getCustomerDetailGraph(
+          Number(customerId),
+          period
+        );
+        setCustomerGraphData(graphData);
+      } catch (error) {
+        console.error("그래프 데이터 로딩 실패:", error);
+        setCustomerGraphData([]); // Clear previous data on error
+      }
+    };
+
+    fetchGraphData();
+  }, [customerId, period]);
 
   const chartOptions = {
     responsive: true,
@@ -65,17 +92,23 @@ const CustomerInfo: React.FC = () => {
     },
   };
 
-  // Ensure customerData and analytics are available before mapping
   const chartData = {
     labels:
-      customerData?.analytics?.map(
-        // Added optional chaining
-        (item) => `${parseInt(item.month.split("-")[1])}월`
-      ) || [],
+      customerGraphData?.map((item, index, array) => {
+        if (period === "week") {
+          if (index == 7) {
+            return `이번주`;
+          } else {
+            return `${array.length - index - 1}주전`;
+          }
+        }
+        // Assuming period is 'month' and item.label is 'yyyy-MM'
+        return formatChartLabel(item.label);
+      }) || [],
     datasets: [
       {
-        label: "월별 방문 횟수",
-        data: customerData?.analytics?.map((item) => item.count) || [], // Added optional chaining
+        label: period === "week" ? "주별 방문 횟수" : "월별 방문 횟수",
+        data: customerGraphData?.map((item) => item.count) || [],
         backgroundColor: "rgba(74, 124, 233, 0.6)",
         borderColor: "rgba(74, 124, 233, 1)",
         borderWidth: 1,
@@ -166,7 +199,9 @@ const CustomerInfo: React.FC = () => {
           </div>
           <div className="flex justify-between mb-2 text-xl">
             <span className="font-semibold">전화번호:</span>
-            <span className="font-bold">{formatPhoneNumber(customerData.phone_number)}</span>
+            <span className="font-bold">
+              {formatPhoneNumber(customerData.phone_number)}
+            </span>
           </div>
           <div className="flex justify-between mb-2 text-xl">
             <span className="font-semibold">사용 금액:</span>
@@ -213,8 +248,32 @@ const CustomerInfo: React.FC = () => {
         </div>
         {/* Section 4: 방문 빈도 그래프 */}
         <div className="bg-white xl p-6 mb-0.5">
-          <h3 className="text-lg font-semibold mb-4">최근 6개월 방문 빈도</h3>
-          <Bar options={chartOptions} data={chartData} />
+          <div className="flex justify-between items-center mb-4">
+            <h3 className="text-lg font-semibold">
+              {period === "week"
+                ? "최근 6주 방문 빈도"
+                : "최근 6개월 방문 빈도"}
+            </h3>
+            <div className="flex space-x-2">
+              <Button
+                onClick={() => setPeriod("week")}
+                variant={period === "week" ? "primary" : "ghost"}
+              >
+                주별
+              </Button>
+              <Button
+                onClick={() => setPeriod("month")}
+                variant={period === "month" ? "primary" : "ghost"}
+              >
+                월별
+              </Button>
+            </div>
+          </div>
+          {customerGraphData ? (
+            <Bar options={chartOptions} data={chartData} />
+          ) : (
+            <div>그래프 데이터를 불러오는 중입니다...</div>
+          )}
         </div>
       </div>
     </div>

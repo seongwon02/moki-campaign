@@ -279,7 +279,7 @@ const MainDashboard: React.FC = () => {
             </p>
           ) : (
             atRiskData && (
-              <div className="flex justify-between mb-4">
+              <div className="flex justify-start mb-4 space-x-24">
                 {/* 좌측: 방문 감소 고객 수 - space-x-1로 간격 최소화 */}
                 <div className="flex items-center">
                   {/* 아이콘 크기 유지 */}

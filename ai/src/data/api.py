@@ -13,6 +13,7 @@ class CustomerDataInput(BaseModel):
     amount: float
     total_visits: int
     days_since_last_visit: int
+    # [변경 1] 6개월 데이터 -> 8주 데이터로 변경 (백엔드 AiCustomerDataInputDto와 일치)
     visits_8_week_ago: int
     visits_7_week_ago: int
     visits_6_week_ago: int
@@ -22,7 +23,6 @@ class CustomerDataInput(BaseModel):
     visits_2_week_ago: int
     visits_1_week_ago: int
 
-# (참고) CustomerRequest 모델은 이 방식에서 사용되지 않습니다.
 class CustomerRequest(BaseModel):
     data: List[CustomerDataInput]
 
@@ -231,16 +231,17 @@ async def root():
 @app.post("/api/ai/customers", 
           response_model=CustomerResponse,
           response_model_exclude_unset=True)
-async def analyze_customers_endpoint(customer_data: List[CustomerDataInput]): 
+async def analyze_customers_endpoint(request: CustomerRequest): 
     """
     고객 데이터 리스트(JSON)를 받아 분석 후,
     결과(점수, 세그먼트)가 추가된 리스트(JSON)를 반환합니다.
+    요청 형식: {"data": [ ... ]}
     """
-    if not customer_data:
+    if not request.data:
         return CustomerResponse(result=[])
     
     try:
-        data_list = [customer.model_dump() for customer in customer_data]
+        data_list = [customer.model_dump() for customer in request.data]
         df = pd.DataFrame(data_list)
         
         result_df = analyze_customer_data(df)

@@ -1,4 +1,4 @@
-package com.example.moki_campaign.infra.ai.dto;
+package com.example.moki_campaign.infra.ai.dto.response;
 
 
 import com.fasterxml.jackson.annotation.JsonProperty;

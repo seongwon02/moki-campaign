@@ -2,8 +2,9 @@ package com.example.moki_campaign.infra.ai.client;
 
 import com.example.moki_campaign.global.exception.common.BusinessException;
 import com.example.moki_campaign.global.exception.common.ErrorCode;
-import com.example.moki_campaign.infra.ai.dto.AiCustomerDataInputDto;
-import com.example.moki_campaign.infra.ai.dto.AiCustomerDataResponseDto;
+import com.example.moki_campaign.infra.ai.dto.request.AiAnalysisRequestDto; // [추가]
+import com.example.moki_campaign.infra.ai.dto.request.AiCustomerDataInputDto;
+import com.example.moki_campaign.infra.ai.dto.response.AiCustomerDataResponseDto;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatusCode;
@@ -47,10 +48,12 @@ public class AiClient {
         try {
             log.info("AI 서버 고객 분석 요청. 고객 수: {}", customerData.size());
 
+            AiAnalysisRequestDto requestBody = new AiAnalysisRequestDto(customerData);
+
             AiCustomerDataResponseDto response = restClient.post()
                     .uri("/api/ai/customers")
                     .contentType(MediaType.APPLICATION_JSON)
-                    .body(customerData)
+                    .body(requestBody)
                     .retrieve()
                     .body(AiCustomerDataResponseDto.class);
 

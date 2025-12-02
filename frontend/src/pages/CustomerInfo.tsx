@@ -253,7 +253,7 @@ const CustomerInfo: React.FC = () => {
           <div className="flex justify-between items-center mb-4">
             <h3 className="text-lg font-semibold">
               {period === "week"
-                ? "최근 6주 방문 빈도"
+                ? "최근 8주 방문 빈도"
                 : "최근 6개월 방문 빈도"}
             </h3>
             <div className="flex space-x-2">

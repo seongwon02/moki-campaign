@@ -13,8 +13,8 @@ import ReversedGaugeChart from "../components/common/ReversedGaugeChart";
 
 // NOTE: The structure of the response from getDeclineCustomers is assumed here.
 interface DeclineStats {
-  decline_customer_count: number;
-  decline_customer_rate: number;
+  decline_count: number;
+  decline_ratio: number;
 }
 
 const RiskLoyal: React.FC = () => {
@@ -76,7 +76,7 @@ const RiskLoyal: React.FC = () => {
     }
   };
 
-  const declineRate = stats?.decline_customer_rate ?? 0;
+  const declineRate = stats?.decline_ratio ?? 0;
 
   const getChurnIndicatorColor = (rate: number): string => {
     if (rate <= 10) {
@@ -154,7 +154,7 @@ const RiskLoyal: React.FC = () => {
             </div>
             <p className="text-4xl font-bold">
               <span className={indicatorColor}>
-                {stats?.decline_customer_count ?? 0}
+                {stats?.decline_count ?? 0}
               </span>
               명
             </p>

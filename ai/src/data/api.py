@@ -65,11 +65,6 @@ def log_minmax_series(s):
     s_log = np.log1p(s.astype(float))
     return minmax_series(s_log)
 
-def inv_minmax_series(s):
-    """역수 변환 (작을수록 점수 높음)"""
-    arr = 1.0 / (1.0 + s.astype(float))
-    return minmax_series(pd.Series(arr))
-
 def compute_initial_loyalty_score(df, weights=None):
     """
     [1단계: AI 학습용 정답지 생성 - Log Scale 적용]
@@ -128,11 +123,12 @@ def try_train_model_and_predict(df, feature_cols, label_col="initial_loyalty_sco
 
 def compute_churn_risk_score(df, weights=None):
     """
-    [이탈 위험도 점수 - Decline 중심 + Log Scale]
-    - 가중치: Recency(0.2), Trend(0.3), Decline(0.5)
+    [이탈 위험도 점수 - 로컬 분석 로직 동기화 완료]
+    - 가중치: Recency(0.4), Trend(0.3), Decline(0.3)
     """
     if weights is None:
-        weights = {"recency_n": 0.2, "weighted_trend_inv_n": 0.3, "visit_decline_n": 0.5}
+        # [핵심 변경] 로컬 스크립트와 동일한 가중치 적용
+        weights = {"recency_n": 0.4, "weighted_trend_inv_n": 0.3, "visit_decline_n": 0.3}
         
     df = df.copy()
     # 결측치 채우기
@@ -218,9 +214,9 @@ def analyze_customer_data(df: pd.DataFrame) -> pd.DataFrame:
         # 3. 이탈 위험도 점수
         df_active["churn_risk_score"] = compute_churn_risk_score(df_active).round(4)
         
-        # 4. 세그먼트 할당 (요청하신 임계값 적용)
+        # 4. 세그먼트 할당 (로컬 로직 임계값 적용)
         LOYALTY_THRESHOLD = 0.60      # 충성도 기준 0.6
-        CHURN_RISK_THRESHOLD = 0.60    # 이탈 기준 0.6 (수정됨)
+        CHURN_RISK_THRESHOLD = 0.40   # [핵심 변경] 이탈 기준 0.6 (안정성 확보)
 
         df_active["is_loyal"] = df_active["predicted_loyalty_score"] >= LOYALTY_THRESHOLD
         df_active["is_high_risk"] = df_active["churn_risk_score"] >= CHURN_RISK_THRESHOLD

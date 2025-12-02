@@ -220,7 +220,7 @@ def analyze_customer_data(df: pd.DataFrame) -> pd.DataFrame:
         
         # 4. 세그먼트 할당 (요청하신 임계값 적용)
         LOYALTY_THRESHOLD = 0.60      # 충성도 기준 0.6
-        CHURN_RISK_THRESHOLD = 0.5    # 이탈 기준 0.5 (수정됨)
+        CHURN_RISK_THRESHOLD = 0.60    # 이탈 기준 0.6 (수정됨)
 
         df_active["is_loyal"] = df_active["predicted_loyalty_score"] >= LOYALTY_THRESHOLD
         df_active["is_high_risk"] = df_active["churn_risk_score"] >= CHURN_RISK_THRESHOLD

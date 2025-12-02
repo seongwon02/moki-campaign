@@ -128,7 +128,7 @@ def compute_churn_risk_score(df, weights=None):
     """
     if weights is None:
         # [핵심 변경] 로컬 스크립트와 동일한 가중치 적용
-        weights = {"recency_n": 0.4, "weighted_trend_inv_n": 0.3, "visit_decline_n": 0.3}
+        weights = {"recency_n": 0.3, "weighted_trend_inv_n": 0.3, "visit_decline_n": 0.4}
         
     df = df.copy()
     # 결측치 채우기

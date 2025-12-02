@@ -2,7 +2,7 @@ import numpy as np
 import pandas as pd
 from sklearn.ensemble import RandomForestRegressor
 from fastapi import FastAPI, HTTPException
-from pydantic import BaseModel, Field
+from pydantic import BaseModel
 from typing import List, Optional
 import uvicorn
 from fastapi.middleware.cors import CORSMiddleware
@@ -13,7 +13,6 @@ class CustomerDataInput(BaseModel):
     amount: float
     total_visits: int
     days_since_last_visit: int
-    # [변경 1] 6개월 데이터 -> 8주 데이터로 변경 (백엔드 AiCustomerDataInputDto와 일치)
     visits_8_week_ago: int
     visits_7_week_ago: int
     visits_6_week_ago: int
@@ -31,6 +30,7 @@ class CustomerDataOutput(BaseModel):
     customer_id: str
     customer_segment: str
     predicted_loyalty_score: float
+    churn_risk_score: float  # 디버깅 및 분석용
 
 class CustomerResponse(BaseModel):
     result: List[CustomerDataOutput]
@@ -41,7 +41,6 @@ app = FastAPI(
     description="고객 데이터를 받아 충성도와 이탈 위험도를 분석합니다."
 )
 
-# CORS 설정
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],
@@ -52,132 +51,126 @@ app.add_middleware(
 
 # ---------- 3. 분석용 유틸 함수 ----------
 def minmax_series(s):
+    """기본 Min-Max 정규화"""
     mn, mx = s.min(), s.max()
     if mx == mn:
         return s.apply(lambda _: 0.5)
     return (s - mn) / (mx - mn)
 
+def log_minmax_series(s):
+    """
+    [핵심] 로그 변환 후 정규화
+    - 데이터 쏠림 현상 방지
+    """
+    s_log = np.log1p(s.astype(float))
+    return minmax_series(s_log)
+
 def inv_minmax_series(s):
-    # 0이 들어올 경우를 대비해 안전하게 역수 계산
+    """역수 변환 (작을수록 점수 높음)"""
     arr = 1.0 / (1.0 + s.astype(float))
     return minmax_series(pd.Series(arr))
 
-def compute_rule_based_scores(df, weights=None):
-    # [변경 2] 충성도 점수: Recency 제거 (누적 가치 중심)
-    default_w = {"total_visits": 0.5, "amount": 0.5, "recency_inv": 0.0}
-    
+def compute_initial_loyalty_score(df, weights=None):
+    """
+    [1단계: AI 학습용 정답지 생성 - Log Scale 적용]
+    - Recency(40), Visits(30), Spend(30)
+    """
     if weights is None:
-        weights = default_w
+        weights = {"total_visits": 0.3, "avg_spend": 0.3, "recency_inv": 0.4}
     
-    for col in ["total_visits", "days_since_last_visit", "amount"]:
-        if col not in df.columns:
-            df[col] = 0.0
-            
-    df["total_visits"] = df["total_visits"].fillna(0.0)
-    df["days_since_last_visit"] = df["days_since_last_visit"].fillna(0.0)
-    df["amount"] = df["amount"].fillna(0.0)
+    df = df.copy()
+    
+    # 평균 지출 금액 계산
+    df["avg_spend"] = df.apply(lambda x: x["amount"] / x["total_visits"] if x["total_visits"] > 0 else 0, axis=1)
 
-    total_visits_n = minmax_series(df["total_visits"].astype(float))
-    recency_inv_n = inv_minmax_series(df["days_since_last_visit"].astype(float))
-    amount_n = minmax_series(df["amount"].astype(float))
+    # 로그 변환 + 정규화
+    total_visits_n = log_minmax_series(df["total_visits"])
+    avg_spend_n = log_minmax_series(df["avg_spend"])
     
+    # Recency: 작을수록 좋음 -> 로그 변환 후 뒤집기 (1 - 값)
+    recency_log = np.log1p(df["days_since_last_visit"].astype(float))
+    recency_norm = minmax_series(recency_log)
+    recency_inv_n = 1.0 - recency_norm 
+    
+    # 가중 합산
     weighted = (
         total_visits_n * weights["total_visits"]
+        + avg_spend_n * weights["avg_spend"]
         + recency_inv_n * weights["recency_inv"]
-        + amount_n * weights["amount"]
     )
     
-    w_min = weighted.min()
-    shifted = weighted - w_min
-    
-    if shifted.max() == 0:
-        scores = np.zeros(len(shifted))
-    else:
-        scores = shifted / shifted.max()
-        
-    scores = np.clip(scores, 0.0, 1.0)
-    return scores
+    return np.clip(weighted, 0.0, 1.0)
 
-def try_train_model_and_predict(df, feature_cols, label_col="loyalty_score"):
+def try_train_model_and_predict(df, feature_cols, label_col="initial_loyalty_score"):
+    """
+    [AI 모델 학습]
+    - 규칙 기반 점수(initial_loyalty_score)를 정답으로 학습
+    - Random Forest로 최종 점수 예측
+    """
     if label_col not in df.columns or df[label_col].isnull().all():
         return None
     
-    labeled = df[df[label_col].notnull() & (df[label_col] > 0)]
-    if len(labeled) < 10:
-        return None
-    
+    # 학습 데이터 준비
     X = df[feature_cols].fillna(0).astype(float)
     y = df[label_col].astype(float)
     
-    X_train, y_train = X.loc[y > 0], y.loc[y > 0]
-    X_all = X
+    # 데이터가 너무 적으면(10개 미만) 규칙 점수 그대로 사용
+    if len(X) < 10:
+        return None
+
+    # 모델 학습
+    model = RandomForestRegressor(n_estimators=200, random_state=42, max_depth=5)
+    model.fit(X, y)
     
-    model = RandomForestRegressor(n_estimators=200, random_state=42)
-    model.fit(X_train, y_train)
-    
-    preds = model.predict(X_all)
-    preds = np.clip(preds, 0.0, 1.0)
-    return preds
+    # 예측
+    preds = model.predict(X)
+    return np.clip(preds, 0.0, 1.0)
 
 def compute_churn_risk_score(df, weights=None):
-    # [수정 1] 가중치 조정: 감소폭(decline) 변수 추가
-    default_w = {"recency_n": 0.4, "weighted_trend_inv_n": 0.3, "visit_decline_n": 0.3}
+    """
+    [이탈 위험도 점수 - Decline 중심 + Log Scale]
+    - 가중치: Recency(0.2), Trend(0.3), Decline(0.5)
+    """
     if weights is None:
-        weights = default_w
+        weights = {"recency_n": 0.2, "weighted_trend_inv_n": 0.3, "visit_decline_n": 0.5}
         
+    df = df.copy()
     # 결측치 채우기
     for w in range(1, 9):
         col = f"visits_{w}_week_ago"
         if col not in df.columns:
             df[col] = 0.0
         df[col] = df[col].fillna(0.0)
-        
     df["days_since_last_visit"] = df["days_since_last_visit"].fillna(0.0)
-    df["total_visits"] = df["total_visits"].fillna(0.0)
 
-    # ---------------------------------------------------------
-    # 1. Recency (최근 방문 경과일) - Outlier 처리 (Clipping)
-    # ---------------------------------------------------------
-    # 999일 같은 이상치 때문에 30일 미방문이 0점 처리되는 것을 방지하기 위해
-    # 60일(약 2달) 이상은 모두 동일하게 '완전 이탈'로 간주 (Max 60으로 자름)
+    # 1. Recency (60일 기준 Clipping + MinMax)
     clipped_recency = df["days_since_last_visit"].clip(upper=60)
     recency_n = minmax_series(clipped_recency.astype(float))
 
-    # ---------------------------------------------------------
-    # 2. Activity Trend (단순 활동성)
-    # ---------------------------------------------------------
-    # 최근 8주간 방문이 아예 없으면 위험
+    # 2. Activity Trend
     weights_recent = {
         "visits_1_week_ago": 8.0, "visits_2_week_ago": 7.0,
         "visits_3_week_ago": 6.0, "visits_4_week_ago": 5.0,
         "visits_5_week_ago": 4.0, "visits_6_week_ago": 3.0,
         "visits_7_week_ago": 2.0, "visits_8_week_ago": 1.0,
     }
-    
     weighted_score = pd.Series(np.zeros(len(df)), index=df.index, dtype=float)
     for col, weight in weights_recent.items():
         weighted_score += df[col] * weight
-        
-    weighted_trend_inv_n = inv_minmax_series(weighted_score) # 방문 적을수록 1.0
+    
+    # Trend는 활동 적을수록 위험 -> 역수 변환
+    weighted_inv = 1.0 / (1.0 + weighted_score)
+    weighted_trend_inv_n = minmax_series(weighted_inv)
 
-    # ---------------------------------------------------------
-    # 3. Visit Decline (방문 감소폭) - [신규 로직]
-    # ---------------------------------------------------------
-    # 과거 4주(5~8주전) 대비 최근 4주(1~4주전) 방문이 얼마나 줄었는가?
-    # (과거 - 최근) / (과거 + 1) -> 양수면 감소(위험), 음수면 증가(양호)
+    # 3. Visit Decline (로그 변환 적용)
     recent_4w_sum = (df["visits_1_week_ago"] + df["visits_2_week_ago"] + 
                      df["visits_3_week_ago"] + df["visits_4_week_ago"])
     past_4w_sum = (df["visits_5_week_ago"] + df["visits_6_week_ago"] + 
                    df["visits_7_week_ago"] + df["visits_8_week_ago"])
     
-    # 감소량 계산 (값이 클수록 많이 줄어든 것)
-    decline_score = (past_4w_sum - recent_4w_sum)
-    # 감소하지 않았거나(음수), 방문이 늘어난 경우는 0으로 처리 (위험도 없음)
-    decline_score = decline_score.clip(lower=0)
-    
-    visit_decline_n = minmax_series(decline_score)
+    decline_score = (past_4w_sum - recent_4w_sum).clip(lower=0)
+    visit_decline_n = log_minmax_series(decline_score) # [핵심] 로그 적용
 
-    # 최종 점수 합산
     churn_scores = (
         recency_n * weights["recency_n"]
         + weighted_trend_inv_n * weights["weighted_trend_inv_n"]
@@ -185,43 +178,82 @@ def compute_churn_risk_score(df, weights=None):
     )
     return minmax_series(churn_scores)
 
-# ---------- 4. 고객 데이터 분석 ----------
+# ---------- 4. 고객 데이터 분석 (메인 로직) ----------
 def analyze_customer_data(df: pd.DataFrame) -> pd.DataFrame:
-    rule_scores = compute_rule_based_scores(df)
+    # -----------------------------------------------------------------
+    # [1] 활성/비활성 고객 분리 (Active vs Inactive)
+    # -----------------------------------------------------------------
+    # 60일 이상 미방문 고객은 분석 분포를 왜곡하므로 별도 처리
+    ACTIVE_THRESHOLD = 60
     
-    # 모델 학습용 컬럼 (현재 API 호출에서는 label이 없으므로 rule_scores가 주로 사용됨)
-    feature_cols = ["total_visits", "days_since_last_visit", "amount"]
-    learned_preds = try_train_model_and_predict(df, feature_cols, label_col="loyalty_score")
+    if "days_since_last_visit" not in df.columns:
+        df["days_since_last_visit"] = 0
     
-    if learned_preds is not None:
-        final_scores = 0.4 * rule_scores + 0.6 * learned_preds
-    else:
-        final_scores = rule_scores
+    mask_active = df["days_since_last_visit"] <= ACTIVE_THRESHOLD
+    
+    df_active = df[mask_active].copy()
+    df_inactive = df[~mask_active].copy()
+    
+    # -----------------------------------------------------------------
+    # [2] 활성 고객(Active) 분석 수행
+    # -----------------------------------------------------------------
+    if not df_active.empty:
+        # 1. 초기 충성도 점수 (로그 변환 + 규칙 기반)
+        df_active["initial_loyalty_score"] = compute_initial_loyalty_score(df_active)
         
-    df["predicted_loyalty_score"] = final_scores.round(4)
-    df["churn_risk_score"] = compute_churn_risk_score(df).round(4)
-    
-    # [변경 4] 기준값(Threshold) 및 세그먼트 정의 수정
-    # LOYALTY_THRESHOLD = 0.7 (기존 유지)
-    # CHURN_RISK_THRESHOLD = 0.45 (민감도 향상을 위해 0.5 -> 0.45로 하향)
-    LOYALTY_THRESHOLD = 0.7
-    CHURN_RISK_THRESHOLD = 0.45
+        # 2. AI 모델 학습 및 예측 (Random Forest)
+        feature_cols = ["total_visits", "days_since_last_visit", "amount", 
+                        "visits_1_week_ago", "visits_2_week_ago", "visits_3_week_ago", "visits_4_week_ago"]
+        
+        learned_preds = try_train_model_and_predict(df_active, feature_cols, label_col="initial_loyalty_score")
+        
+        if learned_preds is not None:
+            df_active["predicted_loyalty_score"] = learned_preds
+        else:
+            # 데이터 부족 시 규칙 기반 점수 사용
+            df_active["predicted_loyalty_score"] = df_active["initial_loyalty_score"]
+            
+        df_active["predicted_loyalty_score"] = df_active["predicted_loyalty_score"].round(4)
+        
+        # 3. 이탈 위험도 점수
+        df_active["churn_risk_score"] = compute_churn_risk_score(df_active).round(4)
+        
+        # 4. 세그먼트 할당 (요청하신 임계값 적용)
+        LOYALTY_THRESHOLD = 0.60      # 충성도 기준 0.6
+        CHURN_RISK_THRESHOLD = 0.40   # 이탈 기준 0.4
 
-    df["is_loyal"] = df["predicted_loyalty_score"] >= LOYALTY_THRESHOLD
-    df["is_high_risk"] = df["churn_risk_score"] >= CHURN_RISK_THRESHOLD
+        df_active["is_loyal"] = df_active["predicted_loyalty_score"] >= LOYALTY_THRESHOLD
+        df_active["is_high_risk"] = df_active["churn_risk_score"] >= CHURN_RISK_THRESHOLD
+
+        conditions = [
+            (df_active["is_loyal"] & df_active["is_high_risk"]),      # AT_RISK_LOYAL
+            (df_active["is_loyal"] & ~df_active["is_high_risk"]),     # LOYAL
+            (~df_active["is_loyal"] & df_active["is_high_risk"]),     # CHURN_RISK
+            (~df_active["is_loyal"] & ~df_active["is_high_risk"])     # GENERAL
+        ]
+        choices = ["AT_RISK_LOYAL", "LOYAL", "CHURN_RISK", "GENERAL"]
+        df_active["customer_segment"] = np.select(conditions, choices, default="GENERAL")
+
+    # -----------------------------------------------------------------
+    # [3] 비활성 고객(Inactive) 처리
+    # -----------------------------------------------------------------
+    if not df_inactive.empty:
+        # 장기 미방문자는 무조건 이탈 위험군으로 분류
+        df_inactive["predicted_loyalty_score"] = 0.0
+        df_inactive["churn_risk_score"] = 1.0
+        df_inactive["customer_segment"] = "CHURN_RISK"
+
+    # -----------------------------------------------------------------
+    # [4] 결과 병합
+    # -----------------------------------------------------------------
+    result_df = pd.concat([df_active, df_inactive])
     
-    # 세그먼트 할당 로직 (np.select 활용)
-    conditions = [
-        (df["is_loyal"] & df["is_high_risk"]),      # 1. 충성도 높음 & 위험 높음 -> AT_RISK_LOYAL
-        (df["is_loyal"] & ~df["is_high_risk"]),     # 2. 충성도 높음 & 위험 낮음 -> LOYAL
-        (~df["is_loyal"] & df["is_high_risk"]),     # 3. 충성도 낮음 & 위험 높음 -> CHURN_RISK
-        (~df["is_loyal"] & ~df["is_high_risk"])     # 4. 충성도 낮음 & 위험 낮음 -> GENERAL
-    ]
-    choices = ["AT_RISK_LOYAL", "LOYAL", "CHURN_RISK", "GENERAL"]
+    # 안전한 반환을 위해 NaN 처리
+    result_df["predicted_loyalty_score"] = result_df["predicted_loyalty_score"].fillna(0.0)
+    result_df["churn_risk_score"] = result_df["churn_risk_score"].fillna(0.0)
+    result_df["customer_segment"] = result_df["customer_segment"].fillna("GENERAL")
     
-    df["customer_segment"] = np.select(conditions, choices, default="GENERAL")
-    
-    return df
+    return result_df
 
 # ---------- 5. 엔드포인트 ----------
 @app.get("/")
@@ -235,7 +267,6 @@ async def analyze_customers_endpoint(request: CustomerRequest):
     """
     고객 데이터 리스트(JSON)를 받아 분석 후,
     결과(점수, 세그먼트)가 추가된 리스트(JSON)를 반환합니다.
-    요청 형식: {"data": [ ... ]}
     """
     if not request.data:
         return CustomerResponse(result=[])
@@ -246,12 +277,16 @@ async def analyze_customers_endpoint(request: CustomerRequest):
         
         result_df = analyze_customer_data(df)
         
+        # DataFrame -> Dict List 변환
         result_records = result_df.to_dict(orient="records")
         
         return CustomerResponse(result=result_records)
     
     except Exception as e:
         print(f"Error during analysis: {e}")
+        # 로컬 테스트 시 상세 에러 확인용
+        import traceback
+        traceback.print_exc()
         raise HTTPException(status_code=500, detail=f"Analysis failed: {str(e)}")
 
 # ---------- 6. 서버 실행 ----------

@@ -184,12 +184,14 @@ const CustomerInfo: React.FC = () => {
           <div className="flex justify-between mb-2 text-xl">
             <span className="font-semibold">이름:</span>
             <span className="font-bold flex items-center">
-              {customerData.loyalty_score >= 70 && (
+              {(customerData.segment === "LOYAL" ||
+                customerData.segment === "AT_RISK_LOYAL") && (
                 <span className="mr-2 px-2 py-1 rounded-full text-sm bg-[#4A7CE9] text-white">
                   단골
                 </span>
               )}
-              {customerData.churn_risk_level === "HIGH" && (
+              {(customerData.churn_risk_level === "HIGH" ||
+                customerData.segment === "AT_RISK_LOYAL") && (
                 <span className="mr-2 px-2 py-1 rounded-full text-sm bg-red-500 text-white">
                   이탈 위험
                 </span>
@@ -251,7 +253,7 @@ const CustomerInfo: React.FC = () => {
           <div className="flex justify-between items-center mb-4">
             <h3 className="text-lg font-semibold">
               {period === "week"
-                ? "최근 6주 방문 빈도"
+                ? "최근 8주 방문 빈도"
                 : "최근 6개월 방문 빈도"}
             </h3>
             <div className="flex space-x-2">

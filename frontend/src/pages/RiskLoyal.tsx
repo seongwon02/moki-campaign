@@ -150,7 +150,7 @@ const RiskLoyal: React.FC = () => {
                 alt="이탈 아이콘"
                 className="w-8 h-8 mr-2"
               />
-              <p className="text-lg font-semibold">이탈 위험 고객</p>
+              <p className="text-lg font-semibold">방문 감소 고객</p>
             </div>
             <p className="text-4xl font-bold">
               <span className={indicatorColor}>

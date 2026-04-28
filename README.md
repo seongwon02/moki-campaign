@@ -94,12 +94,6 @@ Churn Risk Score = 0.3 × Recency + 0.3 × Activity Trend + 0.4 × Decline
 
 ## 🚀 시작하기 (Getting Started)
 
-### 사전 준비
-
-- Docker 27.3.1+
-- Docker Compose 2.29.7+
-
-### 실행
 ```bash
 # 1. Git Repository Clone
 git clone https://github.com/seongwon02/moki-campaign.git
